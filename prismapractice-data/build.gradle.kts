@@ -9,6 +9,7 @@ plugins {
 
 dependencies {
     api(project(":prismapractice-api"))
+    api(project(":prismapractice-config"))
     api(project(":prismapractice-core"))
 
     implementation("com.zaxxer:HikariCP:$hikariVersion")

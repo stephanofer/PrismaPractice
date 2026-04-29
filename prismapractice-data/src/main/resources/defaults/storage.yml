@@ -1,0 +1,36 @@
+config-schema-version: 1
+
+mysql:
+  host: 127.0.0.1
+  port: 3306
+  database: prismapractice
+  username: prismapractice
+  password: change-me
+  parameters:
+    sslMode: PREFERRED
+    allowPublicKeyRetrieval: false
+    serverTimezone: UTC
+    characterEncoding: utf8
+    useUnicode: true
+
+pool:
+  maximum-pool-size: 10
+  minimum-idle: 2
+  connection-timeout-ms: 5000
+  validation-timeout-ms: 2000
+  idle-timeout-ms: 600000
+  max-lifetime-ms: 1740000
+  keepalive-time-ms: 300000
+  leak-detection-threshold-ms: 0
+
+migrations:
+  locations:
+    - classpath:db/migration
+  table: flyway_schema_history
+  baseline-on-migrate: false
+  validate-on-migrate: true
+  clean-disabled: true
+  fail-on-missing-locations: false
+
+startup:
+  test-query: SELECT 1

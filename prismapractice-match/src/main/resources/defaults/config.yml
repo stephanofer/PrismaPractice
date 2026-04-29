@@ -1,6 +1,0 @@
-config-schema-version: 2
-sample-text: match-default-text
-sample:
-  number: 22
-toggles:
-  auto-flag: false

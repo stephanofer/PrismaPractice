@@ -1,7 +1,6 @@
 package com.stephanofer.prismapractice.proxy;
 
 import com.google.inject.Inject;
-import com.stephanofer.prismapractice.config.ConfigManager;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
@@ -19,13 +18,12 @@ public final class PrismaPracticeProxyPlugin {
 
     private final ProxyServer proxyServer;
     private final Logger logger;
-    private final ConfigManager configManager;
 
     @Inject
     public PrismaPracticeProxyPlugin(ProxyServer proxyServer, Logger logger, @DataDirectory Path dataDirectory) {
         this.proxyServer = proxyServer;
         this.logger = logger;
-        this.configManager = ProxyDemoConfigBootstrap.bootstrap(dataDirectory, getClass().getClassLoader(), logger::info);
+        logger.info("[proxy-runtime] data-directory={}", dataDirectory.toAbsolutePath());
         logger.info("[demo-runtime] proxy-version={}", proxyServer.getVersion().getVersion());
     }
 }

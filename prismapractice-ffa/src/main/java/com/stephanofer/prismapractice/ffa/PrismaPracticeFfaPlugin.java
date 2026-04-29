@@ -3,23 +3,45 @@ package com.stephanofer.prismapractice.ffa;
 import com.stephanofer.prismapractice.command.PaperCommandServiceContainer;
 import com.stephanofer.prismapractice.command.PaperCommands;
 import com.stephanofer.prismapractice.config.ConfigManager;
+import com.stephanofer.prismapractice.data.mysql.MySqlStorage;
+import com.stephanofer.prismapractice.data.mysql.StorageRuntime;
 import com.stephanofer.prismapractice.ffa.command.FfaCommandDefinitions;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class PrismaPracticeFfaPlugin extends JavaPlugin {
 
     private ConfigManager configManager;
+    private MySqlStorage storage;
 
     @Override
     public void onEnable() {
-        this.configManager = FfaDemoConfigBootstrap.bootstrap(getDataFolder().toPath(), getClassLoader(), message -> getLogger().info(message));
+        try {
+            StorageRuntime runtime = FfaStorageBootstrap.bootstrap(getDataFolder().toPath(), getClassLoader(), message -> getLogger().info(message));
+            this.configManager = runtime.configManager();
+            this.storage = runtime.storage();
+        } catch (RuntimeException exception) {
+            getLogger().severe("Failed to initialize PrismaPractice FFA storage. Disabling plugin.");
+            exception.printStackTrace();
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
+
         PaperCommands.register(
             this,
             PaperCommandServiceContainer.builder()
                 .add(JavaPlugin.class, this)
                 .add(ConfigManager.class, this.configManager)
+                .add(MySqlStorage.class, this.storage)
                 .build(),
             FfaCommandDefinitions.create()
         );
+    }
+
+    @Override
+    public void onDisable() {
+        if (this.storage != null) {
+            this.storage.close();
+        }
     }
 }

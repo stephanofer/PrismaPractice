@@ -1,6 +1,0 @@
-config-schema-version: 2
-sample-text: ffa-default-text
-sample:
-  number: 33
-toggles:
-  auto-flag: true

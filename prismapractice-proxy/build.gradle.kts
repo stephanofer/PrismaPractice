@@ -9,9 +9,7 @@ plugins {
 dependencies {
     implementation(project(":prismapractice-api"))
     implementation(project(":prismapractice-command"))
-    implementation(project(":prismapractice-config"))
     implementation(project(":prismapractice-core"))
-    implementation(project(":prismapractice-data"))
 
     compileOnly("com.velocitypowered:velocity-api:$velocityApiVersion")
     annotationProcessor("com.velocitypowered:velocity-api:$velocityApiVersion")

@@ -1,14 +1,19 @@
 package com.stephanofer.prismapractice.hub;
 
+import com.stephanofer.prismapractice.config.ConfigManager;
+import com.stephanofer.prismapractice.data.mysql.MySqlStorage;
+import com.stephanofer.prismapractice.data.mysql.MySqlStorageBootstrap;
+import com.stephanofer.prismapractice.data.mysql.StorageRuntime;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.Mockito;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
 class PrismaPracticeHubPluginTest {
 
@@ -16,15 +21,14 @@ class PrismaPracticeHubPluginTest {
     Path tempDir;
 
     @Test
-    void shouldBootstrapDemoConfigsAndLogValues() {
-        List<String> logs = new ArrayList<>();
+    void shouldDelegateToSharedStorageBootstrap() {
+        MySqlStorageBootstrap bootstrap = Mockito.mock(MySqlStorageBootstrap.class);
+        StorageRuntime runtime = new StorageRuntime(Mockito.mock(ConfigManager.class), Mockito.mock(MySqlStorage.class));
+        when(bootstrap.bootstrapRuntime(any(), any(), any(), anyString())).thenReturn(runtime);
 
-        HubDemoConfigBootstrap.bootstrap(tempDir, getClass().getClassLoader(), logs::add);
+        StorageRuntime result = HubStorageBootstrap.bootstrap(tempDir, getClass().getClassLoader(), message -> {
+        }, bootstrap);
 
-        assertTrue(Files.exists(tempDir.resolve("config.yml")));
-        assertTrue(Files.exists(tempDir.resolve("messages/demo.yml")));
-        assertTrue(logs.stream().anyMatch(log -> log.contains("sample-text=hub-default-text")));
-        assertTrue(logs.stream().anyMatch(log -> log.contains("greeting=hub says hello")));
-        assertTrue(logs.stream().anyMatch(log -> log.contains("created=") && log.contains("config.yml") && log.contains("messages/demo.yml")));
+        assertNotNull(result.storage());
     }
 }

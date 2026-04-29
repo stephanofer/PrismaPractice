@@ -1,0 +1,5 @@
+-- PrismaPractice storage bootstrap migration.
+--
+-- This migration is intentionally business-table-free.
+-- Its job is to validate Flyway integration, create the schema history table,
+-- and establish the migration pipeline before domain tables arrive.

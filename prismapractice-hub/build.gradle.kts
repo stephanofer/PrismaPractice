@@ -42,6 +42,8 @@ tasks {
     shadowJar {
         archiveClassifier.set("")
         destinationDirectory.set(rootProject.layout.projectDirectory.dir("target"))
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
+
         mergeServiceFiles()
         relocate("org.yaml.snakeyaml", "com.stephanofer.prismapractice.libs.snakeyaml")
     }
