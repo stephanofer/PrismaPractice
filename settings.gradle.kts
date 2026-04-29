@@ -1,0 +1,10 @@
+rootProject.name = "PrismaPractice"
+include("prismapractice-api")
+include("prismapractice-command")
+include("prismapractice-config")
+include("prismapractice-core")
+include("prismapractice-data")
+include("prismapractice-proxy")
+include("prismapractice-hub")
+include("prismapractice-match")
+include("prismapractice-ffa")

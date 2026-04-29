@@ -1,0 +1,49 @@
+val paperApiVersion: String by project
+val mockBukkitPaperVersion: String by project
+val scoreboardLibraryVersion: String by project
+val voicechatApiVersion: String by project
+
+plugins {
+    `java-library`
+    id("com.gradleup.shadow") version "9.3.0"
+    id("xyz.jpenilla.run-paper") version "3.0.2"
+}
+
+dependencies {
+    implementation(project(":prismapractice-api"))
+    implementation(project(":prismapractice-command"))
+    implementation(project(":prismapractice-config"))
+    implementation(project(":prismapractice-core"))
+    implementation(project(":prismapractice-data"))
+
+    compileOnly("io.papermc.paper:paper-api:$paperApiVersion")
+    compileOnly("de.maxhenkel.voicechat:voicechat-api:$voicechatApiVersion")
+
+    implementation("net.megavex:scoreboard-library-api:$scoreboardLibraryVersion")
+    runtimeOnly("net.megavex:scoreboard-library-implementation:$scoreboardLibraryVersion")
+
+}
+
+tasks {
+    processResources {
+        val props = mapOf("version" to version)
+        filesMatching("plugin.yml") {
+            expand(props)
+        }
+    }
+
+    jar {
+        enabled = false
+    }
+
+    shadowJar {
+        archiveClassifier.set("")
+        destinationDirectory.set(rootProject.layout.projectDirectory.dir("target"))
+        mergeServiceFiles()
+        relocate("org.yaml.snakeyaml", "com.stephanofer.prismapractice.libs.snakeyaml")
+    }
+
+    build {
+        dependsOn(shadowJar)
+    }
+}

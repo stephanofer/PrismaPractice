@@ -1,0 +1,7 @@
+config-schema-version: 2
+server-name: PrismaPractice
+queue:
+  max-entries: 150
+messages:
+  motd: Fight hard
+  announce-joins: true

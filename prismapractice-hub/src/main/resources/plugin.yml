@@ -1,0 +1,6 @@
+name: PrismaPracticeHub
+version: ${version}
+main: com.stephanofer.prismapractice.hub.PrismaPracticeHubPlugin
+description: PrismaPractice hub plugin
+author: Stephanofer
+api-version: '1.21.8'

@@ -1,0 +1,6 @@
+name: PrismaPracticeFfa
+version: ${version}
+main: com.stephanofer.prismapractice.ffa.PrismaPracticeFfaPlugin
+description: PrismaPractice ffa plugin
+author: Stephanofer
+api-version: '1.21.8'

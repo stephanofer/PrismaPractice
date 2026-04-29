@@ -1,0 +1,3 @@
+config-schema-version: 1
+greeting: proxy says hello
+footer: proxy footer loaded
