@@ -4,6 +4,7 @@ import com.mojang.brigadier.Command;
 import com.stephanofer.prismapractice.command.CommandLiteralSpec;
 import com.stephanofer.prismapractice.command.CommandSenderScope;
 import com.stephanofer.prismapractice.command.CommandSpec;
+import com.stephanofer.prismapractice.core.application.state.PlayerStateService;
 import java.util.List;
 
 public final class HubCommandDefinitions {
@@ -32,7 +33,19 @@ public final class HubCommandDefinitions {
             .senderScope(CommandSenderScope.ANY)
             .usage("/practice info")
             .executes(context -> {
-                context.replyRich("<aqua>Runtime:</aqua> <gray>hub</gray>");
+                StringBuilder message = new StringBuilder("<aqua>Runtime:</aqua> <gray>hub</gray>");
+                if (context.playerSender() != null) {
+                    PlayerStateService playerStateService = context.findService(PlayerStateService.class);
+                    if (playerStateService != null) {
+                        playerStateService.findCurrentState(new com.stephanofer.prismapractice.api.common.PlayerId(context.playerSender().getUniqueId()))
+                            .ifPresent(state -> message.append(" <dark_gray>|</dark_gray> <aqua>State:</aqua> <gray>")
+                                .append(state.status().name())
+                                .append("/" )
+                                .append(state.subStatus().name())
+                                .append("</gray>"));
+                    }
+                }
+                context.replyRich(message.toString());
                 return Command.SINGLE_SUCCESS;
             }));
 

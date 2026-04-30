@@ -4,3 +4,5 @@ main: com.stephanofer.prismapractice.match.PrismaPracticeMatchPlugin
 description: PrismaPractice match plugin
 author: Stephanofer
 api-version: '1.21.8'
+libraries:
+  - io.lettuce:lettuce-core:${lettuceVersion}

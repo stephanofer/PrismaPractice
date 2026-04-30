@@ -1,6 +1,7 @@
 val paperApiVersion: String by project
 val scoreboardLibraryVersion: String by project
 val voicechatApiVersion: String by project
+val lettuceVersion: String by project
 
 plugins {
     `java-library`
@@ -25,7 +26,7 @@ dependencies {
 
 tasks {
     processResources {
-        val props = mapOf("version" to version)
+        val props = mapOf("version" to version, "lettuceVersion" to lettuceVersion)
         filesMatching("plugin.yml") {
             expand(props)
         }
@@ -38,6 +39,15 @@ tasks {
     shadowJar {
         archiveClassifier.set("")
         destinationDirectory.set(rootProject.layout.projectDirectory.dir("target"))
+
+        dependencies {
+            exclude(dependency("io.lettuce:lettuce-core"))
+            exclude(dependency("io.netty:.*"))
+            exclude(dependency("io.projectreactor:reactor-core"))
+            exclude(dependency("org.reactivestreams:reactive-streams"))
+            exclude(dependency("redis.clients.authentication:redis-authx-core"))
+        }
+
         mergeServiceFiles()
         relocate("org.yaml.snakeyaml", "com.stephanofer.prismapractice.libs.snakeyaml")
     }

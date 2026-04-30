@@ -1,4 +1,4 @@
-config-schema-version: 1
+config-schema-version: 2
 
 mysql:
   host: 127.0.0.1
@@ -34,3 +34,38 @@ migrations:
 
 startup:
   test-query: SELECT 1
+
+redis:
+  enabled: true
+  host: 127.0.0.1
+  port: 6379
+  database: 0
+  username: ""
+  password: ""
+  client-name: prismapractice
+  ssl:
+    enabled: false
+    verify-peer: true
+  resources:
+    io-thread-pool-size: 2
+    computation-thread-pool-size: 2
+  timeouts:
+    connect-timeout-ms: 3000
+    command-timeout-ms: 3000
+  reconnect:
+    initial-delay-ms: 250
+    max-delay-ms: 5000
+  pubsub:
+    enabled: true
+  keyspace:
+    prefix: practice
+    namespace: ""
+  ttl:
+    player-presence-ms: 45000
+    social-cooldown-ms: 3000
+    friend-request-ms: 300000
+    duel-request-ms: 30000
+    party-invite-ms: 60000
+    transition-lock-ms: 15000
+    matchmaking-lock-ms: 15000
+    arena-lock-ms: 15000

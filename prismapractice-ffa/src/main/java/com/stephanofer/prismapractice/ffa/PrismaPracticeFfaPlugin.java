@@ -5,6 +5,7 @@ import com.stephanofer.prismapractice.command.PaperCommands;
 import com.stephanofer.prismapractice.config.ConfigManager;
 import com.stephanofer.prismapractice.data.mysql.MySqlStorage;
 import com.stephanofer.prismapractice.data.mysql.StorageRuntime;
+import com.stephanofer.prismapractice.data.redis.RedisStorage;
 import com.stephanofer.prismapractice.ffa.command.FfaCommandDefinitions;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -13,6 +14,7 @@ public final class PrismaPracticeFfaPlugin extends JavaPlugin {
 
     private ConfigManager configManager;
     private MySqlStorage storage;
+    private RedisStorage redisStorage;
 
     @Override
     public void onEnable() {
@@ -20,6 +22,7 @@ public final class PrismaPracticeFfaPlugin extends JavaPlugin {
             StorageRuntime runtime = FfaStorageBootstrap.bootstrap(getDataFolder().toPath(), getClassLoader(), message -> getLogger().info(message));
             this.configManager = runtime.configManager();
             this.storage = runtime.storage();
+            this.redisStorage = runtime.redisStorage();
         } catch (RuntimeException exception) {
             getLogger().severe("Failed to initialize PrismaPractice FFA storage. Disabling plugin.");
             exception.printStackTrace();
@@ -33,6 +36,7 @@ public final class PrismaPracticeFfaPlugin extends JavaPlugin {
                 .add(JavaPlugin.class, this)
                 .add(ConfigManager.class, this.configManager)
                 .add(MySqlStorage.class, this.storage)
+                .add(RedisStorage.class, this.redisStorage)
                 .build(),
             FfaCommandDefinitions.create()
         );
@@ -42,6 +46,9 @@ public final class PrismaPracticeFfaPlugin extends JavaPlugin {
     public void onDisable() {
         if (this.storage != null) {
             this.storage.close();
+        }
+        if (this.redisStorage != null) {
+            this.redisStorage.close();
         }
     }
 }

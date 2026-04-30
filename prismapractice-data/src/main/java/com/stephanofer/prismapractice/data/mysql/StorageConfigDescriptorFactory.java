@@ -9,16 +9,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-final class StorageConfigDescriptorFactory {
+public final class StorageConfigDescriptorFactory {
 
     private StorageConfigDescriptorFactory() {
     }
 
-    static ConfigDescriptor<MySqlStorageConfig> storageDescriptor() {
+    public static ConfigDescriptor<MySqlStorageConfig> storageDescriptor() {
         return ConfigDescriptor.builder("storage", MySqlStorageConfig.class)
                 .filePath("storage.yml")
                 .bundledResourcePath("defaults/storage.yml")
-                .schemaVersion(1)
+                .schemaVersion(2)
+                .migration(1, root -> {
+                })
                 .mapper(root -> {
                     Map<String, Object> mysql = YamlConfigHelper.section(root, "mysql");
                     Map<String, Object> pool = YamlConfigHelper.section(root, "pool");

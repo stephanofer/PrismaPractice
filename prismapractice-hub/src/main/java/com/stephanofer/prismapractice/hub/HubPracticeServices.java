@@ -1,0 +1,64 @@
+package com.stephanofer.prismapractice.hub;
+
+import com.stephanofer.prismapractice.api.arena.ArenaOperationalStateRepository;
+import com.stephanofer.prismapractice.api.arena.ArenaRepository;
+import com.stephanofer.prismapractice.api.arena.ArenaReservationRepository;
+import com.stephanofer.prismapractice.api.history.MatchHistoryRepository;
+import com.stephanofer.prismapractice.api.leaderboard.LeaderboardProjectionRepository;
+import com.stephanofer.prismapractice.api.matchmaking.MatchmakingSnapshotRepository;
+import com.stephanofer.prismapractice.api.match.ActiveMatchRepository;
+import com.stephanofer.prismapractice.api.match.MatchRepository;
+import com.stephanofer.prismapractice.api.profile.ProfileRepository;
+import com.stephanofer.prismapractice.api.queue.PlayerPartyIndexRepository;
+import com.stephanofer.prismapractice.api.queue.QueueEntryRepository;
+import com.stephanofer.prismapractice.api.queue.QueueRepository;
+import com.stephanofer.prismapractice.api.rating.GlobalRatingRepository;
+import com.stephanofer.prismapractice.api.rating.ModeRatingRepository;
+import com.stephanofer.prismapractice.api.rating.RankTierRepository;
+import com.stephanofer.prismapractice.api.rating.RatingChangeRepository;
+import com.stephanofer.prismapractice.api.rating.SeasonContextRepository;
+import com.stephanofer.prismapractice.core.application.arena.ArenaAllocationService;
+import com.stephanofer.prismapractice.core.application.history.HistoryService;
+import com.stephanofer.prismapractice.core.application.leaderboard.LeaderboardProjectionService;
+import com.stephanofer.prismapractice.core.application.match.MatchService;
+import com.stephanofer.prismapractice.core.application.matchmaking.MatchmakingService;
+import com.stephanofer.prismapractice.core.application.rating.RatingService;
+import com.stephanofer.prismapractice.api.state.PlayerOperationLockRepository;
+import com.stephanofer.prismapractice.api.state.PlayerPresenceRepository;
+import com.stephanofer.prismapractice.api.state.PlayerStateRepository;
+import com.stephanofer.prismapractice.core.application.profile.ProfileService;
+import com.stephanofer.prismapractice.core.application.queue.QueueService;
+import com.stephanofer.prismapractice.core.application.state.PlayerStateService;
+
+record HubPracticeServices(
+        ProfileRepository profileRepository,
+        PlayerStateRepository playerStateRepository,
+        PlayerPresenceRepository playerPresenceRepository,
+        PlayerOperationLockRepository playerOperationLockRepository,
+        QueueRepository queueRepository,
+        QueueEntryRepository queueEntryRepository,
+        MatchmakingSnapshotRepository matchmakingSnapshotRepository,
+        ArenaRepository arenaRepository,
+        ArenaOperationalStateRepository arenaOperationalStateRepository,
+        ArenaReservationRepository arenaReservationRepository,
+        MatchRepository matchRepository,
+        ActiveMatchRepository activeMatchRepository,
+        ModeRatingRepository modeRatingRepository,
+        GlobalRatingRepository globalRatingRepository,
+        RankTierRepository rankTierRepository,
+        SeasonContextRepository seasonContextRepository,
+        RatingChangeRepository ratingChangeRepository,
+        MatchHistoryRepository matchHistoryRepository,
+        LeaderboardProjectionRepository leaderboardProjectionRepository,
+        PlayerPartyIndexRepository playerPartyIndexRepository,
+        ProfileService profileService,
+        PlayerStateService playerStateService,
+        QueueService queueService,
+        MatchmakingService matchmakingService,
+        ArenaAllocationService arenaAllocationService,
+        MatchService matchService,
+        RatingService ratingService,
+        HistoryService historyService,
+        LeaderboardProjectionService leaderboardProjectionService
+) {
+}
