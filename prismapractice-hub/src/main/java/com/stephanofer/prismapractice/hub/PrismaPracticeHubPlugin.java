@@ -15,9 +15,11 @@ import com.stephanofer.prismapractice.core.application.state.PlayerStateService;
 import com.stephanofer.prismapractice.data.mysql.MySqlStorage;
 import com.stephanofer.prismapractice.data.mysql.StorageRuntime;
 import com.stephanofer.prismapractice.data.redis.RedisStorage;
+import com.stephanofer.prismapractice.feedback.FeedbackConfig;
 import com.stephanofer.prismapractice.hub.command.HubCommandDefinitions;
 import com.stephanofer.prismapractice.hub.hotbar.HubHotbarModule;
 import com.stephanofer.prismapractice.hub.hotbar.HubHotbarService;
+import com.stephanofer.prismapractice.paper.feedback.PaperFeedbackService;
 import com.stephanofer.prismapractice.paper.scoreboard.PaperScoreboardService;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -30,6 +32,7 @@ public final class PrismaPracticeHubPlugin extends JavaPlugin {
     private HubPracticeServices practiceServices;
     private HubHotbarModule hotbarModule;
     private HubScoreboardModule scoreboardModule;
+    private PaperFeedbackService feedbackService;
 
     @Override
     public void onEnable() {
@@ -39,6 +42,7 @@ public final class PrismaPracticeHubPlugin extends JavaPlugin {
             this.storage = runtime.storage();
             this.redisStorage = runtime.redisStorage();
             this.practiceServices = HubPracticeServicesFactory.create(this.storage, this.redisStorage);
+            this.feedbackService = new PaperFeedbackService(this, this.configManager.get("hub-feedback", FeedbackConfig.class));
             this.scoreboardModule = HubScoreboardModule.create(this, this.configManager, this.practiceServices);
             this.hotbarModule = HubHotbarModule.create(this, this.configManager, this.practiceServices, this.scoreboardModule);
         } catch (RuntimeException exception) {
@@ -49,7 +53,7 @@ public final class PrismaPracticeHubPlugin extends JavaPlugin {
         }
 
         Bukkit.getPluginManager().registerEvents(
-                new HubPlayerLifecycleListener(this, this.practiceServices.profileService(), this.practiceServices.playerStateService(), this.hotbarModule.hotbarService(), this.scoreboardModule),
+                new HubPlayerLifecycleListener(this, this.practiceServices.profileService(), this.practiceServices.playerStateService(), this.hotbarModule.hotbarService(), this.scoreboardModule, this.feedbackService),
                 this
         );
         Bukkit.getPluginManager().registerEvents(
@@ -73,6 +77,7 @@ public final class PrismaPracticeHubPlugin extends JavaPlugin {
                 .add(PlayerStateService.class, this.practiceServices.playerStateService())
                 .add(QueueService.class, this.practiceServices.queueService())
                 .add(HubHotbarService.class, this.hotbarModule.hotbarService())
+                .add(PaperFeedbackService.class, this.feedbackService)
                 .add(PaperScoreboardService.class, this.scoreboardModule.scoreboardService())
                 .add(MatchmakingService.class, this.practiceServices.matchmakingService())
                 .add(ArenaAllocationService.class, this.practiceServices.arenaAllocationService())
@@ -87,6 +92,9 @@ public final class PrismaPracticeHubPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (this.feedbackService != null) {
+            this.feedbackService.close();
+        }
         if (this.scoreboardModule != null) {
             this.scoreboardModule.close();
         }

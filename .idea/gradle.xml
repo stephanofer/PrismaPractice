@@ -13,9 +13,11 @@
             <option value="$PROJECT_DIR$/prismapractice-config" />
             <option value="$PROJECT_DIR$/prismapractice-core" />
             <option value="$PROJECT_DIR$/prismapractice-data" />
+            <option value="$PROJECT_DIR$/prismapractice-feedback" />
             <option value="$PROJECT_DIR$/prismapractice-ffa" />
             <option value="$PROJECT_DIR$/prismapractice-hub" />
             <option value="$PROJECT_DIR$/prismapractice-match" />
+            <option value="$PROJECT_DIR$/prismapractice-paper-feedback" />
             <option value="$PROJECT_DIR$/prismapractice-paper-scoreboard" />
             <option value="$PROJECT_DIR$/prismapractice-proxy" />
           </set>

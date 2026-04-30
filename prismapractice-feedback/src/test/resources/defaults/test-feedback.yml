@@ -1,0 +1,32 @@
+config-schema-version: 1
+
+templates:
+  queue-searching:
+    deliveries:
+      - channel: ACTION_BAR
+        mode: PERSISTENT
+        slot: queue-search
+        interval-ticks: 20
+        priority: 100
+        message: "<yellow>Buscando rival para <white>%queue_name%</white>..."
+
+  queue-found:
+    deliveries:
+      - channel: TITLE
+        title: "<green>¡Partida encontrada!"
+        subtitle: "<gray>%opponent%</gray>"
+        times:
+          fade-in-ticks: 10
+          stay-ticks: 50
+          fade-out-ticks: 10
+      - channel: SOUND
+        sound: entity.player.levelup
+        source: MASTER
+        volume: 1.0
+        pitch: 1.0
+      - channel: BOSSBAR
+        message: "<green>Teletransportando..."
+        color: GREEN
+        overlay: PROGRESS
+        progress: 1.0
+        duration-ticks: 60

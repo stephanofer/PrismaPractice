@@ -1,0 +1,89 @@
+config-schema-version: 1
+
+templates:
+  test-chat:
+    deliveries:
+      - channel: CHAT
+        lines:
+          - "<green>Feedback chat de prueba para <white>%player%</white>."
+          - "<gray>Valor recibido:</gray> <yellow>%value%</yellow>"
+
+  test-actionbar:
+    deliveries:
+      - channel: ACTION_BAR
+        message: "<aqua>ActionBar test <white>%player%</white> <dark_gray>|</dark_gray> <yellow>%value%</yellow>"
+
+  test-title:
+    deliveries:
+      - channel: TITLE
+        title: "<green>Title test para %player%"
+        subtitle: "<gray>Valor: %value%</gray>"
+        times:
+          fade-in-ticks: 10
+          stay-ticks: 50
+          fade-out-ticks: 10
+
+  test-sound:
+    deliveries:
+      - channel: SOUND
+        sound: entity.player.levelup
+        source: MASTER
+        volume: 1.0
+        pitch: 1.0
+
+  test-bossbar:
+    deliveries:
+      - channel: BOSSBAR
+        message: "<blue>BossBar test</blue> <white>%player%</white> <dark_gray>|</dark_gray> <yellow>%value%</yellow>"
+        progress: 0.65
+        color: BLUE
+        overlay: PROGRESS
+        duration-ticks: 60
+
+  test-actionbar-persistent:
+    deliveries:
+      - channel: ACTION_BAR
+        mode: PERSISTENT
+        slot: test-actionbar
+        interval-ticks: 20
+        priority: 100
+        message: "<gold>Persistent ActionBar</gold> <white>%player%</white> <dark_gray>|</dark_gray> <yellow>%value%</yellow>"
+
+  test-bossbar-persistent:
+    deliveries:
+      - channel: BOSSBAR
+        mode: PERSISTENT
+        slot: test-bossbar
+        interval-ticks: 20
+        priority: 100
+        message: "<light_purple>Persistent BossBar</light_purple> <white>%player%</white> <dark_gray>|</dark_gray> <yellow>%value%</yellow>"
+        progress: 0.85
+        color: PURPLE
+        overlay: NOTCHED_10
+
+  test-all:
+    deliveries:
+      - channel: CHAT
+        lines:
+          - "<green>Chat test para <white>%player%</white>."
+          - "<gray>Valor:</gray> <yellow>%value%</yellow>"
+      - channel: ACTION_BAR
+        message: "<aqua>ActionBar combinado <yellow>%value%</yellow>"
+      - channel: TITLE
+        title: "<green>Combo test"
+        subtitle: "<gray>%player% - %value%</gray>"
+        times:
+          fade-in-ticks: 10
+          stay-ticks: 40
+          fade-out-ticks: 10
+      - channel: SOUND
+        sound: entity.player.levelup
+        source: MASTER
+        volume: 1.0
+        pitch: 1.0
+      - channel: BOSSBAR
+        message: "<green>BossBar combo <yellow>%value%</yellow>"
+        progress: 1.0
+        color: GREEN
+        overlay: PROGRESS
+        duration-ticks: 50

@@ -1,6 +1,7 @@
 package com.stephanofer.prismapractice.hub;
 
 import com.stephanofer.prismapractice.data.mysql.MySqlStorageBootstrap;
+import com.stephanofer.prismapractice.feedback.FeedbackConfigDescriptorFactory;
 import com.stephanofer.prismapractice.data.mysql.StorageRuntime;
 import com.stephanofer.prismapractice.hub.hotbar.HubHotbarConfigDescriptorFactory;
 import com.stephanofer.prismapractice.paper.scoreboard.PaperScoreboardConfigDescriptorFactory;
@@ -25,6 +26,7 @@ final class HubStorageBootstrap {
                 logger,
                 "hub",
                 List.of(
+                        FeedbackConfigDescriptorFactory.descriptor("hub-feedback", "feedback.yml", "defaults/feedback.yml"),
                         HubHotbarConfigDescriptorFactory.descriptor(),
                         PaperScoreboardConfigDescriptorFactory.descriptor("hub-scoreboards", "scoreboards.yml", "defaults/scoreboards.yml")
                 )

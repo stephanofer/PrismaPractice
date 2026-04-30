@@ -5,6 +5,7 @@ import com.stephanofer.prismapractice.api.common.RuntimeType;
 import com.stephanofer.prismapractice.core.application.profile.ProfileService;
 import com.stephanofer.prismapractice.core.application.state.PlayerStateService;
 import com.stephanofer.prismapractice.hub.hotbar.HubHotbarService;
+import com.stephanofer.prismapractice.paper.feedback.PaperFeedbackService;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -20,13 +21,15 @@ final class HubPlayerLifecycleListener implements Listener {
     private final PlayerStateService playerStateService;
     private final HubHotbarService hotbarService;
     private final HubScoreboardModule scoreboardModule;
+    private final PaperFeedbackService feedbackService;
 
-    HubPlayerLifecycleListener(JavaPlugin plugin, ProfileService profileService, PlayerStateService playerStateService, HubHotbarService hotbarService, HubScoreboardModule scoreboardModule) {
+    HubPlayerLifecycleListener(JavaPlugin plugin, ProfileService profileService, PlayerStateService playerStateService, HubHotbarService hotbarService, HubScoreboardModule scoreboardModule, PaperFeedbackService feedbackService) {
         this.plugin = Objects.requireNonNull(plugin, "plugin");
         this.profileService = Objects.requireNonNull(profileService, "profileService");
         this.playerStateService = Objects.requireNonNull(playerStateService, "playerStateService");
         this.hotbarService = Objects.requireNonNull(hotbarService, "hotbarService");
         this.scoreboardModule = Objects.requireNonNull(scoreboardModule, "scoreboardModule");
+        this.feedbackService = Objects.requireNonNull(feedbackService, "feedbackService");
     }
 
     @EventHandler
@@ -51,6 +54,7 @@ final class HubPlayerLifecycleListener implements Listener {
         try {
             PlayerId playerId = new PlayerId(event.getPlayer().getUniqueId());
             hotbarService.clear(event.getPlayer());
+            feedbackService.clear(event.getPlayer());
             scoreboardModule.clearUiFocus(playerId);
             scoreboardModule.scoreboardService().clear(event.getPlayer());
             playerStateService.markOffline(playerId);
