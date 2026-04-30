@@ -1,0 +1,43 @@
+config-schema-version: 1
+
+settings:
+  tick-interval: 20
+  default-refresh-ticks: 20
+  hide-when-disabled-in-settings: true
+  allow-placeholderapi: false
+
+scenes:
+  ffa_live:
+    priority: 300
+    conditions:
+      runtime-types: [FFA]
+      statuses: [IN_PUBLIC_FFA, IN_PARTY_FFA]
+    title: "<aqua><bold>FFA</bold></aqua>"
+    lines:
+      - "<gray>"
+      - "<white>Ping: <green>%ping%ms"
+      - "<white>State: <yellow>%state%"
+      - "<gray>"
+      - "<aqua>Stay moving"
+
+  ffa_event:
+    priority: 250
+    conditions:
+      runtime-types: [FFA]
+      statuses: [IN_EVENT]
+    title: "<light_purple><bold>Event</bold></light_purple>"
+    lines:
+      - "<gray>"
+      - "<white>Status: <yellow>%sub_state%"
+      - "<white>Ping: <green>%ping%ms"
+
+  ffa_default:
+    priority: 100
+    conditions:
+      runtime-types: [FFA]
+    title: "<aqua><bold>Practice FFA</bold></aqua>"
+    lines:
+      - "<gray>"
+      - "<white>State: <yellow>%state%"
+      - "<white>Online: <green>%online_players%"
+      - "<white>Ping: <green>%ping%ms"

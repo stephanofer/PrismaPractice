@@ -30,7 +30,7 @@ import com.stephanofer.prismapractice.core.application.profile.ProfileService;
 import com.stephanofer.prismapractice.core.application.queue.QueueService;
 import com.stephanofer.prismapractice.core.application.state.PlayerStateService;
 
-record HubPracticeServices(
+public record HubPracticeServices(
         ProfileRepository profileRepository,
         PlayerStateRepository playerStateRepository,
         PlayerPresenceRepository playerPresenceRepository,

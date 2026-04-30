@@ -1,0 +1,56 @@
+config-schema-version: 1
+
+settings:
+  tick-interval: 20
+  default-refresh-ticks: 20
+  hide-when-disabled-in-settings: true
+  allow-placeholderapi: false
+
+scenes:
+  match_fight:
+    priority: 300
+    conditions:
+      runtime-types: [MATCH]
+      statuses: [IN_MATCH]
+      sub-statuses: [IN_ROUND]
+    title: "<red><bold>Duel</bold></red>"
+    lines:
+      - "<gray>"
+      - "<white>Fight clean."
+      - "<white>Ping: <green>%ping%ms"
+      - "<gray>"
+      - "<red>Win the round"
+
+  match_pregame:
+    priority: 250
+    conditions:
+      runtime-types: [MATCH]
+      statuses: [IN_MATCH]
+      sub-statuses: [WAITING_PLAYERS, PRE_FIGHT]
+    title: "<gold><bold>Match Starting</bold></gold>"
+    lines:
+      - "<gray>"
+      - "<white>Prepare your hotbar."
+      - "<white>Ping: <green>%ping%ms"
+
+  match_spectating:
+    priority: 200
+    conditions:
+      runtime-types: [MATCH]
+      statuses: [SPECTATING]
+    title: "<aqua><bold>Spectating</bold></aqua>"
+    lines:
+      - "<gray>"
+      - "<white>Watch the fight."
+      - "<white>Online: <green>%online_players%"
+
+  match_default:
+    priority: 100
+    conditions:
+      runtime-types: [MATCH]
+    title: "<red><bold>Practice Match</bold></red>"
+    lines:
+      - "<gray>"
+      - "<white>State: <yellow>%state%"
+      - "<white>Sub: <yellow>%sub_state%"
+      - "<white>Ping: <green>%ping%ms"

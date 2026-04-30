@@ -2,8 +2,11 @@ package com.stephanofer.prismapractice.hub;
 
 import com.stephanofer.prismapractice.data.mysql.MySqlStorageBootstrap;
 import com.stephanofer.prismapractice.data.mysql.StorageRuntime;
+import com.stephanofer.prismapractice.hub.hotbar.HubHotbarConfigDescriptorFactory;
+import com.stephanofer.prismapractice.paper.scoreboard.PaperScoreboardConfigDescriptorFactory;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.function.Consumer;
 
 final class HubStorageBootstrap {
@@ -16,6 +19,15 @@ final class HubStorageBootstrap {
     }
 
     static StorageRuntime bootstrap(Path dataDirectory, ClassLoader classLoader, Consumer<String> logger, MySqlStorageBootstrap bootstrap) {
-        return bootstrap.bootstrapRuntime(dataDirectory, classLoader, logger, "hub");
+        return bootstrap.bootstrapRuntime(
+                dataDirectory,
+                classLoader,
+                logger,
+                "hub",
+                List.of(
+                        HubHotbarConfigDescriptorFactory.descriptor(),
+                        PaperScoreboardConfigDescriptorFactory.descriptor("hub-scoreboards", "scoreboards.yml", "defaults/scoreboards.yml")
+                )
+        );
     }
 }

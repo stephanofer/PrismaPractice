@@ -25,7 +25,7 @@ class PrismaPracticeMatchPluginTest {
     void shouldDelegateToSharedStorageBootstrap() {
         MySqlStorageBootstrap bootstrap = Mockito.mock(MySqlStorageBootstrap.class);
         StorageRuntime runtime = new StorageRuntime(Mockito.mock(ConfigManager.class), Mockito.mock(MySqlStorage.class), Mockito.mock(RedisStorage.class));
-        when(bootstrap.bootstrapRuntime(any(), any(), any(), anyString())).thenReturn(runtime);
+        when(bootstrap.bootstrapRuntime(any(), any(), any(), anyString(), any())).thenReturn(runtime);
 
         StorageRuntime result = MatchStorageBootstrap.bootstrap(tempDir, getClass().getClassLoader(), message -> {
         }, bootstrap);

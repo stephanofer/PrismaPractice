@@ -13,6 +13,7 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -25,7 +26,7 @@ class PrismaPracticeHubPluginTest {
     void shouldDelegateToSharedStorageBootstrap() {
         MySqlStorageBootstrap bootstrap = Mockito.mock(MySqlStorageBootstrap.class);
         StorageRuntime runtime = new StorageRuntime(Mockito.mock(ConfigManager.class), Mockito.mock(MySqlStorage.class), Mockito.mock(RedisStorage.class));
-        when(bootstrap.bootstrapRuntime(any(), any(), any(), anyString())).thenReturn(runtime);
+        when(bootstrap.bootstrapRuntime(any(), any(), any(), anyString(), anyCollection())).thenReturn(runtime);
 
         StorageRuntime result = HubStorageBootstrap.bootstrap(tempDir, getClass().getClassLoader(), message -> {
         }, bootstrap);

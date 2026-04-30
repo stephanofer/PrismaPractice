@@ -16,6 +16,7 @@ dependencies {
     implementation(project(":prismapractice-config"))
     implementation(project(":prismapractice-core"))
     implementation(project(":prismapractice-data"))
+    implementation(project(":prismapractice-paper-scoreboard"))
 
     compileOnly("io.papermc.paper:paper-api:$paperApiVersion")
     compileOnly("de.maxhenkel.voicechat:voicechat-api:$voicechatApiVersion")

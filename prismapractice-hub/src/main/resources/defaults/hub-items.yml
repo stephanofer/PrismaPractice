@@ -1,0 +1,199 @@
+config-schema-version: 1
+
+profiles:
+  default_hub:
+    selected-slot: 0
+    reset-inventory: true
+    constraints:
+      deny-move: true
+      deny-drop: true
+      deny-place: true
+      deny-pickup: true
+      deny-swap-offhand: true
+    items:
+      "0":
+        key: unranked-queue-menu
+        material: NETHER_STAR
+        amount: 1
+        name: "<gradient:#5ac8fa:#3b82f6><bold>Unranked</bold></gradient>"
+        lore:
+          - "<gray>Elegí una cola unranked"
+          - "<dark_gray>y entrá rápido a pelear."
+        hide-attributes: true
+        action:
+          type: OPEN_MENU
+          trigger: RIGHT_CLICK
+          target: unranked
+          plugin: zMenu
+          page: 1
+      "1":
+        key: ranked-queue-menu
+        material: DIAMOND_SWORD
+        amount: 1
+        name: "<gradient:#f59e0b:#ef4444><bold>Ranked</bold></gradient>"
+        lore:
+          - "<gray>Entrá a la cola competitiva"
+          - "<dark_gray>y jugá por tus puntos."
+        hide-attributes: true
+        action:
+          type: OPEN_MENU
+          trigger: RIGHT_CLICK
+          target: ranked
+          plugin: zMenu
+          page: 1
+      "4":
+        key: party-menu
+        material: PLAYER_HEAD
+        amount: 1
+        name: "<aqua><bold>Party</bold></aqua>"
+        lore:
+          - "<gray>Gestioná tu party"
+          - "<dark_gray>e invitá a tus amigos."
+        hide-attributes: true
+        action:
+          type: OPEN_MENU
+          trigger: RIGHT_CLICK
+          target: party
+          plugin: zMenu
+          page: 1
+      "7":
+        key: settings-menu
+        material: COMPARATOR
+        amount: 1
+        name: "<yellow><bold>Settings</bold></yellow>"
+        lore:
+          - "<gray>Ajustá tu experiencia"
+          - "<dark_gray>dentro del practice."
+        hide-attributes: true
+        action:
+          type: OPEN_MENU
+          trigger: RIGHT_CLICK
+          target: settings
+          plugin: zMenu
+          page: 1
+      "8":
+        key: profile-menu
+        material: BOOK
+        amount: 1
+        name: "<green><bold>Profile</bold></green>"
+        lore:
+          - "<gray>Revisá stats, historial"
+          - "<dark_gray>y progreso competitivo."
+        hide-attributes: true
+        action:
+          type: OPEN_MENU
+          trigger: RIGHT_CLICK
+          target: profile
+          plugin: zMenu
+          page: 1
+
+  queue_waiting:
+    selected-slot: 8
+    reset-inventory: true
+    constraints:
+      deny-move: true
+      deny-drop: true
+      deny-place: true
+      deny-pickup: true
+      deny-swap-offhand: true
+    items:
+      "8":
+        key: leave-queue
+        material: RED_DYE
+        amount: 1
+        name: "<red><bold>Salir de la cola</bold></red>"
+        lore:
+          - "<gray>Click derecho para cancelar"
+          - "<dark_gray>la búsqueda actual."
+        hide-attributes: true
+        action:
+          type: LEAVE_QUEUE
+          trigger: RIGHT_CLICK
+
+  party_member:
+    selected-slot: 0
+    reset-inventory: true
+    constraints:
+      deny-move: true
+      deny-drop: true
+      deny-place: true
+      deny-pickup: true
+      deny-swap-offhand: true
+    items:
+      "0":
+        key: party-members-menu
+        material: PLAYER_HEAD
+        amount: 1
+        name: "<aqua><bold>Party</bold></aqua>"
+        lore:
+          - "<gray>Administrá la party"
+          - "<dark_gray>y sus acciones disponibles."
+        hide-attributes: true
+        action:
+          type: OPEN_MENU
+          trigger: RIGHT_CLICK
+          target: party
+          plugin: zMenu
+          page: 1
+      "8":
+        key: leave-party-queue
+        material: RED_DYE
+        amount: 1
+        name: "<red><bold>Salir de la cola</bold></red>"
+        lore:
+          - "<gray>Disponible cuando la party"
+          - "<dark_gray>esté en espera."
+        hide-attributes: true
+        action:
+          type: LEAVE_QUEUE
+          trigger: RIGHT_CLICK
+
+  party_leader:
+    selected-slot: 0
+    reset-inventory: true
+    constraints:
+      deny-move: true
+      deny-drop: true
+      deny-place: true
+      deny-pickup: true
+      deny-swap-offhand: true
+    items:
+      "0":
+        key: party-leader-menu
+        material: PLAYER_HEAD
+        amount: 1
+        name: "<aqua><bold>Party Leader</bold></aqua>"
+        lore:
+          - "<gray>Configurá y controlá"
+          - "<dark_gray>las acciones de la party."
+        hide-attributes: true
+        action:
+          type: OPEN_MENU
+          trigger: RIGHT_CLICK
+          target: party-leader
+          plugin: zMenu
+          page: 1
+
+  layout_editing:
+    selected-slot: 8
+    reset-inventory: true
+    constraints:
+      deny-move: false
+      deny-drop: true
+      deny-place: true
+      deny-pickup: true
+      deny-swap-offhand: true
+    items:
+      "8":
+        key: layout-exit
+        material: LIME_DYE
+        amount: 1
+        name: "<green><bold>Guardar y salir</bold></green>"
+        lore:
+          - "<gray>Deja lista la base para"
+          - "<dark_gray>cerrar edición luego."
+        hide-attributes: true
+        action:
+          type: CUSTOM
+          trigger: RIGHT_CLICK
+          custom-key: layout-exit

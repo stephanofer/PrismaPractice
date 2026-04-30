@@ -1,0 +1,36 @@
+config-schema-version: 1
+
+settings:
+  tick-interval: 20
+  default-refresh-ticks: 20
+  hide-when-disabled-in-settings: true
+  allow-placeholderapi: false
+
+scenes:
+  hub_default:
+    priority: 100
+    conditions:
+      runtime-types: [HUB]
+      statuses: [HUB]
+    title: "<aqua>Practice"
+    lines:
+      - "<gray>Hello %player_name%"
+
+  hub_queue:
+    priority: 200
+    conditions:
+      statuses: [IN_QUEUE]
+      ui-focuses: [QUEUE_SEARCH]
+    refresh:
+      interval-ticks: 10
+    title: "<red>Queue"
+    lines:
+      - "<white>%queue_name%"
+
+  hub_party:
+    priority: 150
+    conditions:
+      party-membership: [true]
+    title: "<aqua>Party"
+    lines:
+      - "<white>party"

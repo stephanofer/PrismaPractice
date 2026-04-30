@@ -1,0 +1,96 @@
+config-schema-version: 1
+
+settings:
+  tick-interval: 20
+  default-refresh-ticks: 20
+  hide-when-disabled-in-settings: true
+  allow-placeholderapi: false
+
+scenes:
+  hub_queue:
+    priority: 300
+    conditions:
+      runtime-types: [HUB]
+      statuses: [IN_QUEUE]
+    refresh:
+      interval-ticks: 20
+    title: "<gradient:#f59e0b:#ef4444><bold>Queue</bold></gradient>"
+    lines:
+      - "<gray>"
+      - "<white>Mode: <yellow>%queue_name%"
+      - "<white>Type: <yellow>%queue_type%"
+      - "<white>Players: <yellow>%queue_players%"
+      - "<white>Wait: <yellow>%queue_wait%"
+      - "<gray>"
+      - "<red>Use the dye to leave"
+
+  hub_layout_editing:
+    priority: 260
+    conditions:
+      runtime-types: [HUB]
+      statuses: [EDITING_LAYOUT]
+    title: "<green><bold>Layout Editor</bold></green>"
+    lines:
+      - "<gray>"
+      - "<white>Drag your items"
+      - "<white>then save changes."
+      - "<gray>"
+      - "<green>Ready when you are"
+
+  hub_party:
+    priority: 220
+    conditions:
+      runtime-types: [HUB]
+      statuses: [HUB]
+      party-membership: [true]
+    title: "<aqua><bold>Party</bold></aqua>"
+    lines:
+      - "<gray>"
+      - "<white>Status: <aqua>%party_status%"
+      - "<white>Role: <aqua>%party_role%"
+      - "<gray>"
+      - "<white>Queue smart. Fight fast."
+
+  hub_ranked_menu:
+    priority: 210
+    conditions:
+      runtime-types: [HUB]
+      statuses: [HUB]
+      ui-focuses: [RANKED_MENU]
+    title: "<red><bold>Ranked</bold></red>"
+    lines:
+      - "<gray>"
+      - "<white>Rating: <gold>%rating%"
+      - "<white>Rank: <gold>%global_rank%"
+      - "<gray>"
+      - "<yellow>Choose your queue"
+
+  hub_unranked_menu:
+    priority: 205
+    conditions:
+      runtime-types: [HUB]
+      statuses: [HUB]
+      ui-focuses: [UNRANKED_MENU]
+    title: "<aqua><bold>Unranked</bold></aqua>"
+    lines:
+      - "<gray>"
+      - "<white>Warm up cleanly"
+      - "<white>without rating risk."
+      - "<gray>"
+      - "<yellow>Choose your queue"
+
+  hub_default:
+    priority: 100
+    conditions:
+      runtime-types: [HUB]
+      statuses: [HUB]
+    title: "<gradient:#5ac8fa:#3b82f6><bold>Practice</bold></gradient>"
+    lines:
+      - "<gray>"
+      - "<white>Player: <green>%player_name%"
+      - "<white>Online: <green>%online_players%"
+      - "<white>Ping: <green>%ping%ms"
+      - "<white>Rating: <gold>%rating%"
+      - "<white>Rank: <gold>%global_rank%"
+      - "<gray>"
+      - "<aqua>hera.gg"

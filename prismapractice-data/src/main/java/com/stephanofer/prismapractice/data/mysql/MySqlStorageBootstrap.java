@@ -1,6 +1,7 @@
 package com.stephanofer.prismapractice.data.mysql;
 
 import com.zaxxer.hikari.HikariDataSource;
+import com.stephanofer.prismapractice.config.ConfigDescriptor;
 import com.stephanofer.prismapractice.config.ConfigBootstrapResult;
 import com.stephanofer.prismapractice.config.ConfigManager;
 import com.stephanofer.prismapractice.config.ConfigPlatforms;
@@ -8,6 +9,9 @@ import com.stephanofer.prismapractice.data.redis.RedisStorage;
 import com.stephanofer.prismapractice.data.redis.RedisStorageBootstrap;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -34,14 +38,29 @@ public final class MySqlStorageBootstrap {
     }
 
     public StorageRuntime bootstrapRuntime(Path dataDirectory, ClassLoader classLoader, Consumer<String> logger, String runtimeName) {
+        return bootstrapRuntime(dataDirectory, classLoader, logger, runtimeName, List.of());
+    }
+
+    public StorageRuntime bootstrapRuntime(
+            Path dataDirectory,
+            ClassLoader classLoader,
+            Consumer<String> logger,
+            String runtimeName,
+            Collection<ConfigDescriptor<?>> additionalDescriptors
+    ) {
         Objects.requireNonNull(dataDirectory, "dataDirectory");
         Objects.requireNonNull(classLoader, "classLoader");
         Objects.requireNonNull(logger, "logger");
         Objects.requireNonNull(runtimeName, "runtimeName");
+        Objects.requireNonNull(additionalDescriptors, "additionalDescriptors");
+
+        List<ConfigDescriptor<?>> descriptors = new ArrayList<>();
+        descriptors.add(StorageConfigDescriptorFactory.storageDescriptor());
+        descriptors.addAll(additionalDescriptors);
 
         ConfigManager configManager = new ConfigManager(
                 ConfigPlatforms.fromClassLoader(dataDirectory, classLoader, logger::accept),
-                java.util.List.of(StorageConfigDescriptorFactory.storageDescriptor())
+                descriptors
         );
 
         ConfigBootstrapResult bootstrapResult = configManager.loadAll();

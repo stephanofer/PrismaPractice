@@ -2,8 +2,10 @@ package com.stephanofer.prismapractice.match;
 
 import com.stephanofer.prismapractice.data.mysql.MySqlStorageBootstrap;
 import com.stephanofer.prismapractice.data.mysql.StorageRuntime;
+import com.stephanofer.prismapractice.paper.scoreboard.PaperScoreboardConfigDescriptorFactory;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.function.Consumer;
 
 final class MatchStorageBootstrap {
@@ -16,6 +18,12 @@ final class MatchStorageBootstrap {
     }
 
     static StorageRuntime bootstrap(Path dataDirectory, ClassLoader classLoader, Consumer<String> logger, MySqlStorageBootstrap bootstrap) {
-        return bootstrap.bootstrapRuntime(dataDirectory, classLoader, logger, "match");
+        return bootstrap.bootstrapRuntime(
+                dataDirectory,
+                classLoader,
+                logger,
+                "match",
+                List.of(PaperScoreboardConfigDescriptorFactory.descriptor("match-scoreboards", "scoreboards.yml", "defaults/scoreboards.yml"))
+        );
     }
 }

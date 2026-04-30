@@ -17,11 +17,15 @@ dependencies {
     implementation(project(":prismapractice-config"))
     implementation(project(":prismapractice-core"))
     implementation(project(":prismapractice-data"))
+    implementation(project(":prismapractice-paper-scoreboard"))
 
     compileOnly("io.papermc.paper:paper-api:$paperApiVersion")
     compileOnly("me.clip:placeholderapi:$placeholderApiVersion")
     compileOnly("fr.maxlego08.menu:zmenu-api:$zmenuApiVersion")
     compileOnly("de.maxhenkel.voicechat:voicechat-api:$voicechatApiVersion")
+
+    testImplementation("io.papermc.paper:paper-api:$paperApiVersion")
+    testImplementation("fr.maxlego08.menu:zmenu-api:$zmenuApiVersion")
 
     implementation("net.megavex:scoreboard-library-api:$scoreboardLibraryVersion")
     runtimeOnly("net.megavex:scoreboard-library-implementation:$scoreboardLibraryVersion")

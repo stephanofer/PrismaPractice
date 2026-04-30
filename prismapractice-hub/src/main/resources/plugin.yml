@@ -4,5 +4,6 @@ main: com.stephanofer.prismapractice.hub.PrismaPracticeHubPlugin
 description: PrismaPractice hub plugin
 author: Stephanofer
 api-version: '1.21.8'
+softdepend: [zMenu]
 libraries:
   - io.lettuce:lettuce-core:${lettuceVersion}
