@@ -19,6 +19,7 @@ dependencies {
     implementation(project(":prismapractice-data"))
     implementation(project(":prismapractice-feedback"))
     implementation(project(":prismapractice-paper-feedback"))
+    implementation(project(":prismapractice-paper-ui"))
     implementation(project(":prismapractice-paper-scoreboard"))
 
     compileOnly("io.papermc.paper:paper-api:$paperApiVersion")

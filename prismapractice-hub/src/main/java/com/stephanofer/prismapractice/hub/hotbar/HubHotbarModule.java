@@ -3,6 +3,7 @@ package com.stephanofer.prismapractice.hub.hotbar;
 import com.stephanofer.prismapractice.config.ConfigManager;
 import com.stephanofer.prismapractice.hub.HubPracticeServices;
 import com.stephanofer.prismapractice.hub.HubScoreboardModule;
+import com.stephanofer.prismapractice.paper.ui.menu.ZMenuUiService;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.event.Listener;
@@ -29,17 +30,18 @@ public final class HubHotbarModule {
         this.interactionListener = interactionListener;
     }
 
-    public static HubHotbarModule create(JavaPlugin plugin, ConfigManager configManager, HubPracticeServices practiceServices, HubScoreboardModule scoreboardModule) {
+    public static HubHotbarModule create(JavaPlugin plugin, ConfigManager configManager, HubPracticeServices practiceServices, HubScoreboardModule scoreboardModule, ZMenuUiService menuUiService) {
         Objects.requireNonNull(plugin, "plugin");
         Objects.requireNonNull(configManager, "configManager");
         Objects.requireNonNull(practiceServices, "practiceServices");
         Objects.requireNonNull(scoreboardModule, "scoreboardModule");
+        Objects.requireNonNull(menuUiService, "menuUiService");
 
         HubHotbarConfig config = configManager.get("hub-items", HubHotbarConfig.class);
         HubHotbarItemRegistry registry = new HubHotbarItemRegistry(plugin, config);
         HubPlayerHotbarContextService contextService = new HubPlayerHotbarContextService(practiceServices.playerStateService(), practiceServices.playerPartyIndexRepository());
         HubHotbarService hotbarService = new HubHotbarService(contextService, new HubHotbarProfileResolver(), registry);
-        HubHotbarActionDispatcher dispatcher = new HubHotbarActionDispatcher(plugin, practiceServices.queueService(), new ZMenuHubHotbarMenuController(plugin), hotbarService, scoreboardModule);
+        HubHotbarActionDispatcher dispatcher = new HubHotbarActionDispatcher(plugin, practiceServices.queueService(), new ZMenuHubHotbarMenuController(menuUiService), hotbarService, scoreboardModule);
         dispatcher.registerCustomHandler("layout-exit", (player, action) -> {
             player.sendMessage(Component.text("La edición de layout todavía no está conectada, pero la base del item ya quedó lista.", NamedTextColor.YELLOW));
             return false;

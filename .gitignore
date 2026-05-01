@@ -45,3 +45,6 @@ bin/
 ### Build Output ###
 target/
 target-internal/
+
+
+zmenu/

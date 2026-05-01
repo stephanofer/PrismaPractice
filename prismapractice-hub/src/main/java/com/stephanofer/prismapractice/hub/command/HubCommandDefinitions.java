@@ -7,7 +7,10 @@ import com.stephanofer.prismapractice.command.CommandLiteralSpec;
 import com.stephanofer.prismapractice.command.CommandSenderScope;
 import com.stephanofer.prismapractice.command.CommandSpec;
 import com.stephanofer.prismapractice.core.application.state.PlayerStateService;
+import com.stephanofer.prismapractice.hub.ui.HubUiModule;
 import com.stephanofer.prismapractice.paper.feedback.PaperFeedbackService;
+import com.stephanofer.prismapractice.paper.ui.dialog.PaperDialogService;
+import com.stephanofer.prismapractice.paper.ui.menu.ZMenuUiService;
 import org.bukkit.entity.Player;
 
 import java.util.LinkedHashMap;
@@ -57,8 +60,72 @@ public final class HubCommandDefinitions {
             }));
 
         practice.child(feedbackCommand());
+        practice.child(uiCommand());
 
         return List.of(practice);
+    }
+
+    private static CommandLiteralSpec uiCommand() {
+        CommandLiteralSpec ui = CommandLiteralSpec.literal("ui")
+                .senderScope(CommandSenderScope.PLAYER_ONLY)
+                .usage("/practice ui <menu|dialog|reload|reset>")
+                .executes(context -> {
+                    context.replyRich("<yellow>Usá:</yellow> <gray>/practice ui menu <demo-main|demo-dynamic>, /practice ui dialog <id>, /practice ui reload, /practice ui reset</gray>");
+                    return Command.SINGLE_SUCCESS;
+                });
+
+        ui.children(
+                CommandLiteralSpec.literal("menu")
+                        .usage("/practice ui menu <demo-main|demo-dynamic>")
+                        .child(CommandArgumentSpec.argument("menu", StringArgumentType.word())
+                                .executes(context -> {
+                                    String menu = context.argument("menu", String.class);
+                                    boolean opened = context.service(ZMenuUiService.class).openMenu(context.playerSender(), "PrismaPracticeHub", menu, 1, true);
+                                    if (!opened) {
+                                        context.replyRich("<red>No pude abrir el menú:</red> <gray>" + menu + "</gray>");
+                                        return 0;
+                                    }
+                                    context.replyRich("<green>Menú abierto:</green> <gray>" + menu + "</gray>");
+                                    return Command.SINGLE_SUCCESS;
+                                })),
+                CommandLiteralSpec.literal("dialog")
+                        .usage("/practice ui dialog <id>")
+                        .child(CommandArgumentSpec.argument("id", StringArgumentType.word())
+                                .executes(context -> {
+                                    String dialogId = context.argument("id", String.class);
+                                    HubUiModule uiModule = context.service(HubUiModule.class);
+                                    uiModule.dialogService().sessionStore().session(context.playerSender().getUniqueId().toString()).putAll(uiModule.demoStateStore().snapshot(context.playerSender()));
+                                    boolean opened = context.service(PaperDialogService.class).open(context.playerSender(), dialogId);
+                                    if (!opened) {
+                                        context.replyRich("<red>No pude abrir el dialog:</red> <gray>" + dialogId + "</gray>");
+                                        return 0;
+                                    }
+                                    context.replyRich("<green>Dialog abierto:</green> <gray>" + dialogId + "</gray>");
+                                    return Command.SINGLE_SUCCESS;
+                                })),
+                CommandLiteralSpec.literal("reload")
+                        .usage("/practice ui reload")
+                        .executes(context -> {
+                            HubUiModule uiModule = context.service(HubUiModule.class);
+                            uiModule.dialogService().reload();
+                            if (uiModule.menuService().isAvailable()) {
+                                uiModule.menuService().reload();
+                            }
+                            context.replyRich("<green>UI recargada.</green>");
+                            return Command.SINGLE_SUCCESS;
+                        }),
+                CommandLiteralSpec.literal("reset")
+                        .usage("/practice ui reset")
+                        .executes(context -> {
+                            HubUiModule uiModule = context.service(HubUiModule.class);
+                            uiModule.demoStateStore().reset(context.playerSender());
+                            uiModule.dialogService().sessionStore().remove(context.playerSender().getUniqueId().toString());
+                            uiModule.menuService().updateInventory(context.playerSender());
+                            context.replyRich("<green>Estado demo de UI reseteado.</green>");
+                            return Command.SINGLE_SUCCESS;
+                        })
+        );
+        return ui;
     }
 
     private static CommandLiteralSpec feedbackCommand() {

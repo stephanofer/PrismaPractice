@@ -1,0 +1,43 @@
+name: "<green><bold>Review Demo</bold></green>"
+external-title: "Review Demo"
+type: multi_action
+can-close-with-escape: true
+pause: false
+after-action: CLOSE
+body:
+  summary:
+    type: plain_message
+    width: 430
+    messages:
+      - "<gray>Alias:</gray> <white>%session_nickname%</white>"
+      - "<gray>Spectators:</gray> <white>%session_spectators_text%</white>"
+      - "<gray>Tema:</gray> <white>%session_theme%</white>"
+      - "<gray>Rounds:</gray> <white>%session_rounds%</white>"
+      - "<gray>Mode desde menú:</gray> <white>%session_demo_mode%</white>"
+      - "<gray>Counter desde menú:</gray> <white>%session_demo_counter%</white>"
+multi-actions:
+  back:
+    text: "<yellow>Volver</yellow>"
+    tooltip: "<gray>Regresar al configurador</gray>"
+    width: 140
+    actions:
+      1:
+        success:
+          - type: back
+  command:
+    text: "<aqua>Comando demo</aqua>"
+    tooltip: "<gray>Lanza un comando de feedback</gray>"
+    width: 160
+    actions:
+      1:
+        success:
+          - type: run_player_command
+            command: "/practice feedback chat dialog-review"
+  close:
+    text: "<green>Listo</green>"
+    tooltip: "<gray>Cerrar review</gray>"
+    width: 130
+    actions:
+      1:
+        success:
+          - type: close

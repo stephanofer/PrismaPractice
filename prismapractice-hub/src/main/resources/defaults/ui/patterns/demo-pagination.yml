@@ -1,0 +1,30 @@
+name: "prismapractice-demo-pagination"
+size: 54
+
+items:
+  previous:
+    type: PREVIOUS
+    is-permanent: true
+    slot: 48
+    item:
+      material: ARROW
+      name: "<yellow><bold>Página anterior</bold></yellow>"
+      lore:
+        - "<gray>Volvé a la página previa."
+    else:
+      item:
+        material: LIGHT_GRAY_STAINED_GLASS_PANE
+        name: "<gray>"
+  next:
+    type: NEXT
+    is-permanent: true
+    slot: 50
+    item:
+      material: ARROW
+      name: "<yellow><bold>Página siguiente</bold></yellow>"
+      lore:
+        - "<gray>Pasá a la siguiente página."
+    else:
+      item:
+        material: LIGHT_GRAY_STAINED_GLASS_PANE
+        name: "<gray>"

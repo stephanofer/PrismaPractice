@@ -1,0 +1,42 @@
+name: "<aqua><bold>Demo Multi Action</bold></aqua>"
+external-title: "Demo Multi Action"
+type: multi_action
+can-close-with-escape: true
+pause: false
+after-action: CLOSE
+body:
+  intro:
+    type: plain_message
+    width: 420
+    messages:
+      - "<gray>Probá varias acciones en un mismo dialog."
+      - "<gray>Session mode:</gray> <white>%session_demo_mode%</white>"
+      - "<gray>Session counter:</gray> <white>%session_demo_counter%</white>"
+multi-actions:
+  message:
+    text: "<green>Enviar mensaje</green>"
+    tooltip: "<gray>Feedback simple en chat</gray>"
+    width: 180
+    actions:
+      1:
+        success:
+          - type: message
+            messages:
+              - "<green>Hola desde el dialog multi-action.</green>"
+  configurator:
+    text: "<gold>Ir al configurador</gold>"
+    tooltip: "<gray>Salto a otro dialog</gray>"
+    width: 180
+    actions:
+      1:
+        success:
+          - type: open_dialog
+            dialog: "demo-configurator"
+  close:
+    text: "<red>Cerrar</red>"
+    tooltip: "<gray>Cerrar este dialog</gray>"
+    width: 140
+    actions:
+      1:
+        success:
+          - type: close

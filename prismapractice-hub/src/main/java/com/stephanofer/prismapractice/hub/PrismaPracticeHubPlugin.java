@@ -19,8 +19,11 @@ import com.stephanofer.prismapractice.feedback.FeedbackConfig;
 import com.stephanofer.prismapractice.hub.command.HubCommandDefinitions;
 import com.stephanofer.prismapractice.hub.hotbar.HubHotbarModule;
 import com.stephanofer.prismapractice.hub.hotbar.HubHotbarService;
+import com.stephanofer.prismapractice.hub.ui.HubUiModule;
 import com.stephanofer.prismapractice.paper.feedback.PaperFeedbackService;
 import com.stephanofer.prismapractice.paper.scoreboard.PaperScoreboardService;
+import com.stephanofer.prismapractice.paper.ui.dialog.PaperDialogService;
+import com.stephanofer.prismapractice.paper.ui.menu.ZMenuUiService;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -33,6 +36,7 @@ public final class PrismaPracticeHubPlugin extends JavaPlugin {
     private HubHotbarModule hotbarModule;
     private HubScoreboardModule scoreboardModule;
     private PaperFeedbackService feedbackService;
+    private HubUiModule uiModule;
 
     @Override
     public void onEnable() {
@@ -44,7 +48,8 @@ public final class PrismaPracticeHubPlugin extends JavaPlugin {
             this.practiceServices = HubPracticeServicesFactory.create(this.storage, this.redisStorage);
             this.feedbackService = new PaperFeedbackService(this, this.configManager.get("hub-feedback", FeedbackConfig.class));
             this.scoreboardModule = HubScoreboardModule.create(this, this.configManager, this.practiceServices);
-            this.hotbarModule = HubHotbarModule.create(this, this.configManager, this.practiceServices, this.scoreboardModule);
+            this.uiModule = HubUiModule.create(this);
+            this.hotbarModule = HubHotbarModule.create(this, this.configManager, this.practiceServices, this.scoreboardModule, this.uiModule.menuService());
         } catch (RuntimeException exception) {
             getLogger().severe("Failed to initialize PrismaPractice Hub storage. Disabling plugin.");
             exception.printStackTrace();
@@ -65,6 +70,7 @@ public final class PrismaPracticeHubPlugin extends JavaPlugin {
                 this
         );
         Bukkit.getPluginManager().registerEvents(this.scoreboardModule.listener(), this);
+        Bukkit.getPluginManager().registerEvents(this.uiModule.dialogListener(), this);
 
         PaperCommands.register(
             this,
@@ -77,6 +83,9 @@ public final class PrismaPracticeHubPlugin extends JavaPlugin {
                 .add(PlayerStateService.class, this.practiceServices.playerStateService())
                 .add(QueueService.class, this.practiceServices.queueService())
                 .add(HubHotbarService.class, this.hotbarModule.hotbarService())
+                .add(HubUiModule.class, this.uiModule)
+                .add(ZMenuUiService.class, this.uiModule.menuService())
+                .add(PaperDialogService.class, this.uiModule.dialogService())
                 .add(PaperFeedbackService.class, this.feedbackService)
                 .add(PaperScoreboardService.class, this.scoreboardModule.scoreboardService())
                 .add(MatchmakingService.class, this.practiceServices.matchmakingService())
@@ -92,6 +101,9 @@ public final class PrismaPracticeHubPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (this.uiModule != null) {
+            this.uiModule.close();
+        }
         if (this.feedbackService != null) {
             this.feedbackService.close();
         }

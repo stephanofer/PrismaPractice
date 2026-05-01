@@ -1,0 +1,89 @@
+name: "<gradient:#f59e0b:#ef4444><bold>Demo Configurator</bold></gradient>"
+external-title: "Demo Configurator"
+type: confirmation
+can-close-with-escape: true
+pause: false
+after-action: CLOSE
+body:
+  intro:
+    type: plain_message
+    width: 420
+    messages:
+      - "<gray>Este dialog prueba todos los tipos de input."
+      - "<gray>Los valores quedan guardados en sesión."
+  emblem:
+    type: item
+    item:
+      material: NETHER_STAR
+      amount: 1
+      name: "<aqua><bold>Native Dialogs Demo</bold></aqua>"
+      lore:
+        - "<gray>Item body con description y tamaños."
+      glowing: true
+      hide-attributes: true
+    description:
+      width: 320
+      messages:
+        - "<gray>Podés combinar body de texto, item,"
+        - "<gray>inputs, sesión y navegación entre steps."
+    show-decoration: true
+    show-tooltip: true
+    width: 180
+    height: 120
+inputs:
+  nickname:
+    type: dialog_text
+    label: "<gold>Alias demo</gold>"
+    width: 320
+    label-visible: true
+    initial-value: "tester"
+    max-length: 20
+  spectators:
+    type: dialog_boolean
+    label: "<yellow>Permitir espectadores</yellow>"
+    initial-value: true
+    text-true: "<green>Sí</green>"
+    text-false: "<red>No</red>"
+  theme:
+    type: dialog_single_option
+    label: "<aqua>Tema visual</aqua>"
+    width: 280
+    label-visible: true
+    options:
+      bronze:
+        id: "bronze"
+        display: "<gold>Bronze</gold>"
+        initial: true
+      silver:
+        id: "silver"
+        display: "<gray>Silver</gray>"
+        initial: false
+      gold:
+        id: "gold"
+        display: "<yellow>Gold</yellow>"
+        initial: false
+  rounds:
+    type: dialog_number_range
+    label: "<green>Rounds</green>"
+    label-format: "%s: %s"
+    width: 280
+    start: 1
+    end: 7
+    step: 1
+    initial-value: 3
+confirmation:
+  yes-text: "<green>Ver resumen</green>"
+  yes-tooltip: "<gray>Guardar inputs y abrir review</gray>"
+  yes-width: 170
+  no-text: "<red>Cancelar</red>"
+  no-tooltip: "<gray>Cerrar</gray>"
+  no-width: 140
+yes-actions:
+  1:
+    success:
+      - type: open_dialog
+        dialog: "demo-review"
+no-actions:
+  1:
+    success:
+      - type: close

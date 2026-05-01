@@ -1,0 +1,13 @@
+name: "prismapractice-demo-back"
+size: 54
+
+items:
+  back:
+    type: BACK
+    is-permanent: true
+    slot: 49
+    item:
+      material: BARRIER
+      name: "<red><bold>Volver</bold></red>"
+      lore:
+        - "<gray>Regresá al menú anterior."

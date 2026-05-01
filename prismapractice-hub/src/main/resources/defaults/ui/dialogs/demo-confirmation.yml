@@ -1,0 +1,30 @@
+name: "<yellow><bold>Demo Confirmation</bold></yellow>"
+external-title: "Demo Confirmation"
+type: confirmation
+can-close-with-escape: true
+pause: false
+after-action: CLOSE
+body:
+  intro:
+    type: plain_message
+    width: 380
+    messages:
+      - "<gray>Querés abrir el configurador completo?"
+      - "<gray>Counter actual:</gray> <white>%session_demo_counter%</white>"
+      - "<gray>Mode actual:</gray> <white>%session_demo_mode%</white>"
+confirmation:
+  yes-text: "<green>Abrir configurador</green>"
+  yes-tooltip: "<gray>Ir al demo avanzado</gray>"
+  yes-width: 180
+  no-text: "<red>Cerrar</red>"
+  no-tooltip: "<gray>Cerrar el dialog</gray>"
+  no-width: 140
+yes-actions:
+  1:
+    success:
+      - type: open_dialog
+        dialog: "demo-configurator"
+no-actions:
+  1:
+    success:
+      - type: close

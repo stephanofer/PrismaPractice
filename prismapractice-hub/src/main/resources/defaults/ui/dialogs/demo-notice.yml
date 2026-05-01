@@ -1,0 +1,24 @@
+name: "<green><bold>Demo Notice</bold></green>"
+external-title: "Demo Notice"
+type: notice
+can-close-with-escape: true
+pause: false
+after-action: CLOSE
+body:
+  intro:
+    type: plain_message
+    width: 360
+    messages:
+      - "<gray>Este dialog prueba el flujo más simple."
+      - "<gray>Counter actual:</gray> <white>%session_demo_counter%</white>"
+      - "<gray>Mode actual:</gray> <white>%session_demo_mode%</white>"
+notice:
+  text: "<green>Entendido</green>"
+  tooltip: "<gray>Cerrar el notice demo</gray>"
+  width: 220
+  actions:
+    1:
+      success:
+        - type: message
+          messages:
+            - "<green>Notice demo confirmado.</green>"

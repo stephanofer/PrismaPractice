@@ -1,0 +1,45 @@
+name: "<gradient:#5ac8fa:#6366f1><bold>PrismaPractice UI Demo</bold></gradient>"
+size: 27
+
+items:
+  dynamic-menu:
+    slot: 11
+    type: inventory
+    plugin: "PrismaPracticeHub"
+    inventory: "demo-dynamic"
+    item:
+      material: NETHER_STAR
+      name: "<aqua><bold>Demo dinámico</bold></aqua>"
+      lore:
+        - "<gray>Probá contenido dinámico,"
+        - "<gray>paginación y refresh visual."
+
+  native-notice:
+    slot: 13
+    type: PP_DEMO_OPEN_DIALOG
+    dialog: "demo-notice"
+    item:
+      material: PAPER
+      name: "<green><bold>Notice dialog</bold></green>"
+      lore:
+        - "<gray>Abrí un dialog notice nativo."
+
+  native-config:
+    slot: 15
+    type: PP_DEMO_OPEN_DIALOG
+    dialog: "demo-configurator"
+    item:
+      material: COMPARATOR
+      name: "<gold><bold>Configurator dialog</bold></gold>"
+      lore:
+        - "<gray>Probá inputs, pasos y sesión."
+
+  reset:
+    slot: 22
+    type: PP_DEMO_RESET
+    item:
+      material: RED_DYE
+      name: "<red><bold>Reset demo state</bold></red>"
+      lore:
+        - "<gray>Limpia el estado temporal"
+        - "<gray>de menús y dialogs demo."

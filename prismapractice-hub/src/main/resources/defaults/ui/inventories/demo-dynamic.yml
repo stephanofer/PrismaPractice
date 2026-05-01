@@ -1,0 +1,81 @@
+name: "<gradient:#22c55e:#14b8a6><bold>Dynamic Demo</bold></gradient> <gray>(%page%/%max-page%)</gray>"
+size: 54
+patterns:
+  - "prismapractice-demo-pagination"
+  - "prismapractice-demo-back"
+
+items:
+  counter:
+    type: PP_DEMO_COUNTER
+    counter-key: "demo_counter"
+    slot: 10
+    item:
+      material: SLIME_BALL
+      name: "<green><bold>Clicks acumulados</bold></green>"
+      lore:
+        - "<gray>Contador actual:</gray> <white>%demo_counter%</white>"
+        - ""
+        - "<dark_gray>Click para incrementar y refrescar."
+
+  mode-toggle:
+    type: PP_DEMO_TOGGLE
+    state-key: "demo_mode"
+    default-value: "bronze"
+    values:
+      - "bronze"
+      - "silver"
+      - "gold"
+    slot: 12
+    item:
+      material: AMETHYST_SHARD
+      name: "<light_purple><bold>Modo visual</bold></light_purple>"
+      lore:
+        - "<gray>Modo actual:</gray> <white>%demo_mode%</white>"
+        - ""
+        - "<dark_gray>Click para ciclar el valor."
+
+  open-confirmation:
+    type: PP_DEMO_OPEN_DIALOG
+    dialog: "demo-confirmation"
+    slot: 14
+    item:
+      material: WRITABLE_BOOK
+      name: "<yellow><bold>Confirmation dialog</bold></yellow>"
+      lore:
+        - "<gray>Abre un dialog de confirmación."
+        - "<gray>Lee valores de sesión actuales."
+
+  open-multi-action:
+    type: PP_DEMO_OPEN_DIALOG
+    dialog: "demo-multi-action"
+    slot: 16
+    item:
+      material: DIAMOND
+      name: "<aqua><bold>Multi action dialog</bold></aqua>"
+      lore:
+        - "<gray>Abre un dialog con varias acciones."
+
+  list:
+    type: PP_DEMO_LIST
+    total-items: 72
+    empty-slot: 31
+    slots:
+      - 19-25
+      - 28-34
+      - 37-43
+    item:
+      material: PAPER
+      name: "<white><bold>Entrada #%entry%</bold></white>"
+      lore:
+        - "<gray>Counter:</gray> <white>%demo_counter%</white>"
+        - "<gray>Mode:</gray> <white>%demo_mode%</white>"
+        - "<dark_gray>Click para feedback simple."
+
+  reset:
+    type: PP_DEMO_RESET
+    slot: 53
+    item:
+      material: RED_DYE
+      name: "<red><bold>Reset</bold></red>"
+      lore:
+        - "<gray>Limpia el estado demo actual."
