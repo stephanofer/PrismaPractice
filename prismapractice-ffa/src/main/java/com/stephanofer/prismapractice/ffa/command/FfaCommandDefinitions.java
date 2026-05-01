@@ -6,6 +6,7 @@ import com.stephanofer.prismapractice.command.CommandArgumentSpec;
 import com.stephanofer.prismapractice.command.CommandLiteralSpec;
 import com.stephanofer.prismapractice.command.CommandSuggestions;
 import com.stephanofer.prismapractice.command.CommandSpec;
+import com.stephanofer.prismapractice.command.DebugCommandDefinitions;
 import com.stephanofer.prismapractice.command.ReloadCoordinator;
 import com.stephanofer.prismapractice.command.ReloadReport;
 import java.util.List;
@@ -50,6 +51,8 @@ public final class FfaCommandDefinitions {
                 .child(CommandArgumentSpec.argument("scope", StringArgumentType.word())
                         .suggests((commandContext, builder) -> CommandSuggestions.completeStrings(builder, commandContext.service(ReloadCoordinator.class).scopes()))
                         .executes(context -> executeReload(context, context.argument("scope", String.class)))));
+
+        DebugCommandDefinitions.appendToRoot(practice, "ffa");
 
         return List.of(practice);
     }

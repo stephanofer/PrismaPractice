@@ -1,5 +1,8 @@
 package com.stephanofer.prismapractice.paper.scoreboard;
 
+import com.stephanofer.prismapractice.debug.DebugCategories;
+import com.stephanofer.prismapractice.debug.DebugController;
+import com.stephanofer.prismapractice.debug.DebugDetailLevel;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -26,6 +29,7 @@ public final class PaperScoreboardService {
 
     private final Plugin plugin;
     private final ScoreboardLibrary scoreboardLibrary;
+    private final DebugController debug;
     private final ScoreboardContextProvider contextProvider;
     private final ScoreboardPlaceholderResolver placeholderResolver;
     private final MiniMessage miniMessage;
@@ -38,12 +42,14 @@ public final class PaperScoreboardService {
             Plugin plugin,
             ScoreboardLibrary scoreboardLibrary,
             PaperScoreboardConfig config,
+            DebugController debug,
             ScoreboardContextProvider contextProvider,
             ScoreboardPlaceholderResolver placeholderResolver
     ) {
         this.plugin = Objects.requireNonNull(plugin, "plugin");
         this.scoreboardLibrary = Objects.requireNonNull(scoreboardLibrary, "scoreboardLibrary");
         this.config = Objects.requireNonNull(config, "config");
+        this.debug = Objects.requireNonNull(debug, "debug");
         this.contextProvider = Objects.requireNonNull(contextProvider, "contextProvider");
         this.placeholderResolver = Objects.requireNonNull(placeholderResolver, "placeholderResolver");
         this.miniMessage = MiniMessage.miniMessage();
@@ -60,7 +66,13 @@ public final class PaperScoreboardService {
         }
 
         try {
-            ScoreboardContextSnapshot snapshot = contextProvider.snapshot(player);
+            ScoreboardContextSnapshot snapshot = debug.measure(
+                    DebugCategories.SCOREBOARD,
+                    "scoreboard.snapshot",
+                    playerContext(player).build(),
+                    debug.config().slowThresholds().scoreboardMs(),
+                    () -> contextProvider.snapshot(player)
+            );
             if (config.settings().hideWhenDisabledInSettings() && !snapshot.showScoreboard()) {
                 clear(player);
                 return;
@@ -80,8 +92,9 @@ public final class PaperScoreboardService {
                 session.sceneKey = scene.get().key();
             }
             session.nextRefreshTick = tickCounter + scene.get().refreshIntervalTicks();
+            debug.debug(DebugCategories.SCOREBOARD, DebugDetailLevel.TRACE, "scoreboard.refresh.completed", "Scoreboard refresh applied", playerContext(player).field("scene", scene.get().key()).field("force", force).build());
         } catch (RuntimeException exception) {
-            plugin.getLogger().warning("Failed to refresh scoreboard for " + player.getName() + ": " + exception.getMessage());
+            debug.error(DebugCategories.SCOREBOARD, "scoreboard.refresh.failed", "Failed to refresh scoreboard", playerContext(player).build(), exception);
         }
     }
 
@@ -101,6 +114,7 @@ public final class PaperScoreboardService {
         this.tickCounter = 0L;
         this.tickerTask.cancel();
         this.tickerTask = startTicker(config.settings().tickInterval());
+        debug.info(DebugCategories.SCOREBOARD, DebugDetailLevel.BASIC, "scoreboard.reload.completed", "Scoreboard configuration reloaded", debug.context().field("tickInterval", config.settings().tickInterval()).build());
         for (Player player : Bukkit.getOnlinePlayers()) {
             refresh(player, true);
         }
@@ -127,6 +141,10 @@ public final class PaperScoreboardService {
 
     private BukkitTask startTicker(long tickInterval) {
         return plugin.getServer().getScheduler().runTaskTimer(plugin, this::tick, tickInterval, tickInterval);
+    }
+
+    private com.stephanofer.prismapractice.debug.DebugContext.Builder playerContext(Player player) {
+        return debug.context().player(player.getUniqueId().toString(), player.getName());
     }
 
     private Optional<ScoreboardSceneConfig> resolveScene(ScoreboardContextSnapshot snapshot) {

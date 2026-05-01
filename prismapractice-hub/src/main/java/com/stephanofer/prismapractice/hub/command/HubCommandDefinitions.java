@@ -7,6 +7,7 @@ import com.stephanofer.prismapractice.command.CommandLiteralSpec;
 import com.stephanofer.prismapractice.command.CommandSenderScope;
 import com.stephanofer.prismapractice.command.CommandSpec;
 import com.stephanofer.prismapractice.command.CommandSuggestions;
+import com.stephanofer.prismapractice.command.DebugCommandDefinitions;
 import com.stephanofer.prismapractice.command.ReloadCoordinator;
 import com.stephanofer.prismapractice.command.ReloadReport;
 import com.stephanofer.prismapractice.core.application.state.PlayerStateService;
@@ -67,6 +68,7 @@ public final class HubCommandDefinitions {
             }));
 
         practice.child(reloadCommand());
+        DebugCommandDefinitions.appendToRoot(practice, "hub");
 
         practice.child(feedbackCommand());
         practice.child(uiCommand());

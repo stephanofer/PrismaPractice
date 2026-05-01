@@ -1,0 +1,34 @@
+config-schema-version: 1
+
+debug:
+  enabled: true
+  console-severity: "warn"
+  ring-buffer-size: 1000
+  default-category-level: "off"
+  include-exception-stack-traces: true
+
+  categories:
+    bootstrap: "basic"
+    command: "basic"
+    profile: "off"
+    player.lifecycle: "basic"
+    state: "basic"
+    permission: "basic"
+    queue: "off"
+    match: "off"
+    storage.mysql: "basic"
+    storage.redis: "basic"
+    redis.connection: "basic"
+    scoreboard: "off"
+    ui: "off"
+    reload: "basic"
+
+  slow-thresholds:
+    service-ms: 25
+    mysql-ms: 50
+    redis-ms: 20
+    scoreboard-ms: 15
+
+  watch:
+    default-minutes: 10
+    max-minutes: 60

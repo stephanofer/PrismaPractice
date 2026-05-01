@@ -3,6 +3,9 @@ package com.stephanofer.prismapractice.data.redis;
 import com.stephanofer.prismapractice.config.ConfigBootstrapResult;
 import com.stephanofer.prismapractice.config.ConfigManager;
 import com.stephanofer.prismapractice.config.ConfigPlatforms;
+import com.stephanofer.prismapractice.debug.DebugCategories;
+import com.stephanofer.prismapractice.debug.DebugController;
+import com.stephanofer.prismapractice.debug.DebugDetailLevel;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisConnectionStateListener;
 import io.lettuce.core.api.StatefulRedisConnection;
@@ -32,24 +35,39 @@ public final class RedisStorageBootstrap {
     }
 
     public RedisStorage bootstrapRuntime(Path dataDirectory, ClassLoader classLoader, Consumer<String> logger, String runtimeName) {
+        return bootstrapRuntime(dataDirectory, classLoader, logger, runtimeName, DebugController.noop());
+    }
+
+    public RedisStorage bootstrapRuntime(Path dataDirectory, ClassLoader classLoader, Consumer<String> logger, String runtimeName, DebugController debug) {
         Objects.requireNonNull(dataDirectory, "dataDirectory");
         Objects.requireNonNull(classLoader, "classLoader");
         Objects.requireNonNull(logger, "logger");
         Objects.requireNonNull(runtimeName, "runtimeName");
+        Objects.requireNonNull(debug, "debug");
 
         ConfigManager configManager = new ConfigManager(
                 ConfigPlatforms.fromClassLoader(dataDirectory, classLoader, logger::accept),
                 java.util.List.of(RedisConfigDescriptorFactory.redisDescriptor())
         );
         ConfigBootstrapResult bootstrapResult = configManager.loadAll();
-        logger.accept("[redis-config] runtime=" + runtimeName + ", created=" + bootstrapResult.createdFiles()
-                + ", updated=" + bootstrapResult.updatedFiles() + ", migrated=" + bootstrapResult.migratedFiles()
-                + ", recovered=" + bootstrapResult.recoveredFiles() + ", warnings=" + bootstrapResult.warnings());
+        debug.info(
+                DebugCategories.STORAGE_REDIS,
+                DebugDetailLevel.BASIC,
+                "redis.config.loaded",
+                "Redis configuration loaded",
+                debug.context()
+                        .field("created", bootstrapResult.createdFiles())
+                        .field("updated", bootstrapResult.updatedFiles())
+                        .field("migrated", bootstrapResult.migratedFiles())
+                        .field("recovered", bootstrapResult.recoveredFiles())
+                        .field("warnings", bootstrapResult.warnings())
+                        .build()
+        );
 
         RedisStorageConfig config = configManager.get("redis-storage", RedisStorageConfig.class);
         if (!config.enabled()) {
-            logger.accept("[redis] runtime=" + runtimeName + ", enabled=false, status=disabled-by-config");
-            return RedisStorage.disabled(runtimeName, config);
+            debug.info(DebugCategories.STORAGE_REDIS, DebugDetailLevel.BASIC, "redis.disabled", "Redis disabled by configuration", debug.context().build());
+            return RedisStorage.disabled(runtimeName, config, debug);
         }
 
         ClientResources resources = null;
@@ -61,50 +79,58 @@ public final class RedisStorageBootstrap {
             client = clientFactory.create(resources, config, runtimeName);
             connection = client.connect(StringCodec.UTF8);
             connection.setTimeout(Duration.ofMillis(config.timeouts().commandTimeoutMs()));
-            connection.addListener(loggingListener(logger, runtimeName, "command"));
+            connection.addListener(loggingListener(debug, runtimeName, "command"));
             connectionVerifier.verify(connection, Duration.ofMillis(config.timeouts().commandTimeoutMs()));
 
             RedisPubSubDispatcher dispatcher = null;
             if (config.pubSub().enabled()) {
                 pubSubConnection = client.connectPubSub(StringCodec.UTF8);
                 pubSubConnection.setTimeout(Duration.ofMillis(config.timeouts().commandTimeoutMs()));
-                pubSubConnection.addListener(loggingListener(logger, runtimeName, "pubsub"));
+                pubSubConnection.addListener(loggingListener(debug, runtimeName, "pubsub"));
                 dispatcher = new RedisPubSubDispatcher(logger, pubSubConnection.async());
                 pubSubConnection.addListener(dispatcher);
             }
 
-            logger.accept("[redis] runtime=" + runtimeName
-                    + ", uri=" + config.safeUri()
-                    + ", client-name=" + config.effectiveClientName(runtimeName)
-                    + ", pubsub-enabled=" + config.pubSub().enabled()
-                    + ", io-threads=" + config.resources().ioThreadPoolSize()
-                    + ", computation-threads=" + config.resources().computationThreadPoolSize());
+            debug.info(
+                    DebugCategories.STORAGE_REDIS,
+                    DebugDetailLevel.BASIC,
+                    "redis.bootstrap.completed",
+                    "Redis storage bootstrapped",
+                    debug.context()
+                            .field("uri", config.safeUri())
+                            .field("clientName", config.effectiveClientName(runtimeName))
+                            .field("pubSubEnabled", config.pubSub().enabled())
+                            .field("ioThreads", config.resources().ioThreadPoolSize())
+                            .field("computationThreads", config.resources().computationThreadPoolSize())
+                            .build()
+            );
 
-            return RedisStorage.enabled(runtimeName, config, resources, client, connection, pubSubConnection, dispatcher);
+            return RedisStorage.enabled(runtimeName, config, debug, resources, client, connection, pubSubConnection, dispatcher);
         } catch (RuntimeException exception) {
             closeQuietly(pubSubConnection);
             closeQuietly(connection);
             shutdownQuietly(client);
             shutdownQuietly(resources);
+            debug.error(DebugCategories.STORAGE_REDIS, "redis.bootstrap.failed", "Failed to bootstrap Redis storage", debug.context().build(), exception);
             throw new RedisAccessException("Failed to bootstrap Redis storage for runtime '" + runtimeName + "'", exception);
         }
     }
 
-    private RedisConnectionStateListener loggingListener(Consumer<String> logger, String runtimeName, String channelType) {
+    private RedisConnectionStateListener loggingListener(DebugController debug, String runtimeName, String channelType) {
         return new RedisConnectionStateListener() {
             @Override
             public void onRedisConnected(io.lettuce.core.RedisChannelHandler<?, ?> connection, java.net.SocketAddress socketAddress) {
-                logger.accept("[redis-connection] runtime=" + runtimeName + ", type=" + channelType + ", state=connected, remote=" + socketAddress);
+                debug.info(DebugCategories.REDIS_CONNECTION, DebugDetailLevel.BASIC, "redis.connection.connected", "Redis connection established", debug.context().field("type", channelType).field("remote", socketAddress).field("runtime", runtimeName).build());
             }
 
             @Override
             public void onRedisDisconnected(io.lettuce.core.RedisChannelHandler<?, ?> connection) {
-                logger.accept("[redis-connection] runtime=" + runtimeName + ", type=" + channelType + ", state=disconnected");
+                debug.warn(DebugCategories.REDIS_CONNECTION, "redis.connection.disconnected", "Redis connection disconnected", debug.context().field("type", channelType).field("runtime", runtimeName).build());
             }
 
             @Override
             public void onRedisExceptionCaught(io.lettuce.core.RedisChannelHandler<?, ?> connection, Throwable cause) {
-                logger.accept("[redis-connection] runtime=" + runtimeName + ", type=" + channelType + ", state=exception, message=" + cause.getMessage());
+                debug.error(DebugCategories.REDIS_CONNECTION, "redis.connection.exception", "Redis connection reported an exception", debug.context().field("type", channelType).field("runtime", runtimeName).build(), cause);
             }
         };
     }

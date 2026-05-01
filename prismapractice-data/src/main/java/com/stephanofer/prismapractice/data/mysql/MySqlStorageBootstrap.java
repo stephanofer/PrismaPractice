@@ -7,6 +7,11 @@ import com.stephanofer.prismapractice.config.ConfigManager;
 import com.stephanofer.prismapractice.config.ConfigPlatforms;
 import com.stephanofer.prismapractice.data.redis.RedisStorage;
 import com.stephanofer.prismapractice.data.redis.RedisStorageBootstrap;
+import com.stephanofer.prismapractice.debug.DebugCategories;
+import com.stephanofer.prismapractice.debug.DebugConfig;
+import com.stephanofer.prismapractice.debug.DebugConsoleSink;
+import com.stephanofer.prismapractice.debug.DebugController;
+import com.stephanofer.prismapractice.debug.DebugDetailLevel;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -64,9 +69,26 @@ public final class MySqlStorageBootstrap {
         );
 
         ConfigBootstrapResult bootstrapResult = configManager.loadAll();
-        logger.accept("[storage-config] runtime=" + runtimeName + ", created=" + bootstrapResult.createdFiles()
-                + ", updated=" + bootstrapResult.updatedFiles() + ", migrated=" + bootstrapResult.migratedFiles()
-                + ", recovered=" + bootstrapResult.recoveredFiles() + ", warnings=" + bootstrapResult.warnings());
+        DebugController debug = new DebugController(
+                runtimeName,
+                configManager.findManaged("runtime-debug")
+                        .map(managed -> (DebugConfig) managed.value())
+                        .orElse(DebugConfig.defaults()),
+                DebugConsoleSink.consumer(logger)
+        );
+        debug.info(
+                DebugCategories.BOOTSTRAP,
+                DebugDetailLevel.BASIC,
+                "bootstrap.config.loaded",
+                "Runtime configuration loaded",
+                debug.context()
+                        .field("created", bootstrapResult.createdFiles())
+                        .field("updated", bootstrapResult.updatedFiles())
+                        .field("migrated", bootstrapResult.migratedFiles())
+                        .field("recovered", bootstrapResult.recoveredFiles())
+                        .field("warnings", bootstrapResult.warnings())
+                        .build()
+        );
 
         MySqlStorageConfig config = configManager.get("storage", MySqlStorageConfig.class);
         HikariDataSource dataSource = null;
@@ -75,14 +97,25 @@ public final class MySqlStorageBootstrap {
             dataSource = poolFactory.create(config, "prismapractice-" + runtimeName + "-mysql");
             connectionVerifier.verify(dataSource, config.startup().testQuery());
             FlywayMigrationSummary migrationSummary = migrationService.migrate(classLoader, dataSource, config, "prismapractice-" + runtimeName);
-            redisStorage = redisBootstrap.bootstrapRuntime(dataDirectory, classLoader, logger, runtimeName);
-            logger.accept("[storage] runtime=" + runtimeName + ", jdbc-url=" + config.safeJdbcUrl()
-                    + ", pool-max=" + config.pool().maximumPoolSize() + ", migrations-executed=" + migrationSummary.migrationsExecuted()
-                    + ", target-version=" + migrationSummary.targetVersion() + ", migration-warnings=" + migrationSummary.warnings());
-            return new StorageRuntime(configManager, new MySqlStorage(runtimeName, config, dataSource, migrationSummary), redisStorage);
+            redisStorage = redisBootstrap.bootstrapRuntime(dataDirectory, classLoader, logger, runtimeName, debug);
+            debug.info(
+                    DebugCategories.STORAGE_MYSQL,
+                    DebugDetailLevel.BASIC,
+                    "mysql.bootstrap.completed",
+                    "MySQL storage bootstrapped",
+                    debug.context()
+                            .field("jdbcUrl", config.safeJdbcUrl())
+                            .field("poolMax", config.pool().maximumPoolSize())
+                            .field("migrationsExecuted", migrationSummary.migrationsExecuted())
+                            .field("targetVersion", migrationSummary.targetVersion())
+                            .field("migrationWarnings", migrationSummary.warnings())
+                            .build()
+            );
+            return new StorageRuntime(configManager, new MySqlStorage(runtimeName, config, dataSource, migrationSummary, debug), redisStorage, debug);
         } catch (RuntimeException exception) {
             closeQuietly(redisStorage);
             closeQuietly(dataSource);
+            debug.error(DebugCategories.STORAGE_MYSQL, "mysql.bootstrap.failed", "Failed to bootstrap MySQL storage", debug.context().build(), exception);
             throw new StorageBootstrapException("Failed to bootstrap MySQL storage for runtime '" + runtimeName + "'", exception);
         }
     }

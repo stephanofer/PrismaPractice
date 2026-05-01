@@ -2,6 +2,7 @@ package com.stephanofer.prismapractice.ffa;
 
 import com.stephanofer.prismapractice.data.mysql.MySqlStorageBootstrap;
 import com.stephanofer.prismapractice.data.mysql.StorageRuntime;
+import com.stephanofer.prismapractice.debug.DebugConfigDescriptorFactory;
 import com.stephanofer.prismapractice.paper.scoreboard.PaperScoreboardConfigDescriptorFactory;
 
 import java.nio.file.Path;
@@ -23,7 +24,10 @@ final class FfaStorageBootstrap {
                 classLoader,
                 logger,
                 "ffa",
-                List.of(PaperScoreboardConfigDescriptorFactory.descriptor("ffa-scoreboards", "scoreboards.yml", "defaults/scoreboards.yml"))
+                List.of(
+                        DebugConfigDescriptorFactory.descriptor(),
+                        PaperScoreboardConfigDescriptorFactory.descriptor("ffa-scoreboards", "scoreboards.yml", "defaults/scoreboards.yml")
+                )
         );
     }
 }

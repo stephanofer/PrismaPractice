@@ -1,5 +1,6 @@
 package com.stephanofer.prismapractice.data.redis;
 
+import com.stephanofer.prismapractice.debug.DebugController;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.async.RedisAsyncCommands;
@@ -19,6 +20,7 @@ public final class RedisStorage implements AutoCloseable {
     private final RedisKeyspace keyspace;
     private final RedisTtlPolicies ttlPolicies;
     private final RedisChannels channels;
+    private final DebugController debug;
     private final ClientResources clientResources;
     private final RedisClient client;
     private final StatefulRedisConnection<String, String> connection;
@@ -29,6 +31,7 @@ public final class RedisStorage implements AutoCloseable {
     private RedisStorage(
             String runtimeName,
             RedisStorageConfig config,
+            DebugController debug,
             ClientResources clientResources,
             RedisClient client,
             StatefulRedisConnection<String, String> connection,
@@ -37,6 +40,7 @@ public final class RedisStorage implements AutoCloseable {
     ) {
         this.runtimeName = Objects.requireNonNull(runtimeName, "runtimeName");
         this.config = Objects.requireNonNull(config, "config");
+        this.debug = Objects.requireNonNull(debug, "debug");
         this.keyspace = new RedisKeyspace(config.keyspace());
         this.ttlPolicies = new RedisTtlPolicies(config.ttl());
         this.channels = new RedisChannels(config.keyspace());
@@ -47,20 +51,21 @@ public final class RedisStorage implements AutoCloseable {
         this.pubSubDispatcher = pubSubDispatcher;
     }
 
-    public static RedisStorage disabled(String runtimeName, RedisStorageConfig config) {
-        return new RedisStorage(runtimeName, config, null, null, null, null, null);
+    public static RedisStorage disabled(String runtimeName, RedisStorageConfig config, DebugController debug) {
+        return new RedisStorage(runtimeName, config, debug, null, null, null, null, null);
     }
 
     static RedisStorage enabled(
             String runtimeName,
             RedisStorageConfig config,
+            DebugController debug,
             ClientResources clientResources,
             RedisClient client,
             StatefulRedisConnection<String, String> connection,
             StatefulRedisPubSubConnection<String, String> pubSubConnection,
             RedisPubSubDispatcher pubSubDispatcher
     ) {
-        return new RedisStorage(runtimeName, config, clientResources, client, connection, pubSubConnection, pubSubDispatcher);
+        return new RedisStorage(runtimeName, config, debug, clientResources, client, connection, pubSubConnection, pubSubDispatcher);
     }
 
     public boolean enabled() {
@@ -85,6 +90,10 @@ public final class RedisStorage implements AutoCloseable {
 
     public RedisChannels channels() {
         return channels;
+    }
+
+    public DebugController debug() {
+        return debug;
     }
 
     public RedisAsyncCommands<String, String> asyncCommands() {

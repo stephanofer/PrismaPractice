@@ -40,7 +40,7 @@ class MySqlStorageBootstrapTest {
         RedisStorage redisStorage = Mockito.mock(RedisStorage.class);
         when(poolFactory.create(any(), anyString())).thenReturn(dataSource);
         when(migrationService.migrate(any(), any(), any(), anyString())).thenReturn(new FlywayMigrationSummary(1, "1", List.of()));
-        when(redisBootstrap.bootstrapRuntime(any(), any(), any(), anyString())).thenReturn(redisStorage);
+        when(redisBootstrap.bootstrapRuntime(any(), any(), any(), anyString(), any())).thenReturn(redisStorage);
 
         List<String> logs = new ArrayList<>();
         MySqlStorageBootstrap bootstrap = new MySqlStorageBootstrap(poolFactory, verifier, migrationService, redisBootstrap);
@@ -53,14 +53,11 @@ class MySqlStorageBootstrapTest {
         assertEquals("jdbc:mysql://127.0.0.1:3306/prismapractice?sslMode=PREFERRED&allowPublicKeyRetrieval=false&serverTimezone=UTC&characterEncoding=utf8&useUnicode=true", config.jdbcUrl());
         assertSame(dataSource, runtime.storage().dataSource());
         assertSame(redisStorage, runtime.redisStorage());
-        assertTrue(logs.stream().anyMatch(log -> log.contains("[storage-config] runtime=hub")));
-        assertTrue(logs.stream().anyMatch(log -> log.contains("migrations-executed=1")));
-
         org.mockito.InOrder inOrder = inOrder(poolFactory, verifier, migrationService, redisBootstrap);
         inOrder.verify(poolFactory).create(any(), anyString());
         inOrder.verify(verifier).verify(any(), anyString());
         inOrder.verify(migrationService).migrate(any(), any(), any(), anyString());
-        inOrder.verify(redisBootstrap).bootstrapRuntime(any(), any(), any(), anyString());
+        inOrder.verify(redisBootstrap).bootstrapRuntime(any(), any(), any(), anyString(), any());
     }
 
     @Test

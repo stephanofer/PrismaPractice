@@ -2,6 +2,7 @@ package com.stephanofer.prismapractice.hub;
 
 import com.stephanofer.prismapractice.api.common.PlayerId;
 import com.stephanofer.prismapractice.config.ConfigManager;
+import com.stephanofer.prismapractice.debug.DebugController;
 import com.stephanofer.prismapractice.paper.scoreboard.DefaultScoreboardPlaceholderResolver;
 import com.stephanofer.prismapractice.paper.scoreboard.PaperScoreboardBootstrap;
 import com.stephanofer.prismapractice.paper.scoreboard.PaperScoreboardConfig;
@@ -30,9 +31,10 @@ public final class HubScoreboardModule {
         this.listener = listener;
     }
 
-    public static HubScoreboardModule create(JavaPlugin plugin, ConfigManager configManager, HubPracticeServices practiceServices) {
+    public static HubScoreboardModule create(JavaPlugin plugin, ConfigManager configManager, DebugController debugController, HubPracticeServices practiceServices) {
         Objects.requireNonNull(plugin, "plugin");
         Objects.requireNonNull(configManager, "configManager");
+        Objects.requireNonNull(debugController, "debugController");
         Objects.requireNonNull(practiceServices, "practiceServices");
 
         PlayerScoreboardDataCache dataCache = new PlayerScoreboardDataCache(practiceServices.profileRepository());
@@ -41,6 +43,7 @@ public final class HubScoreboardModule {
                 plugin,
                 configManager,
                 "hub-scoreboards",
+                debugController,
                 new HubScoreboardContextProvider(practiceServices, dataCache, uiStateService),
                 new DefaultScoreboardPlaceholderResolver()
         );

@@ -5,6 +5,7 @@ val scoreboardLibraryVersion: String by project
 dependencies {
     implementation(project(":prismapractice-api"))
     implementation(project(":prismapractice-config"))
+    implementation(project(":prismapractice-debug"))
 
     compileOnly("io.papermc.paper:paper-api:$paperApiVersion")
     compileOnly("me.clip:placeholderapi:$placeholderApiVersion")

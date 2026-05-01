@@ -56,6 +56,5 @@ class RedisStorageBootstrapTest {
 
         assertFalse(storage.enabled());
         assertFalse(storage.healthSnapshot().commandConnectionOpen());
-        assertTrue(logs.stream().anyMatch(log -> log.contains("status=disabled-by-config")));
     }
 }

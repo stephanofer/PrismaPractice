@@ -2,6 +2,7 @@ package com.stephanofer.prismapractice.data.mysql;
 
 import com.stephanofer.prismapractice.data.JdbcExecutor;
 import com.stephanofer.prismapractice.data.TransactionRunner;
+import com.stephanofer.prismapractice.debug.DebugController;
 import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.HikariPoolMXBean;
 
@@ -15,13 +16,15 @@ public final class MySqlStorage implements AutoCloseable {
     private final JdbcExecutor jdbcExecutor;
     private final TransactionRunner transactionRunner;
     private final FlywayMigrationSummary migrationSummary;
+    private final DebugController debug;
     private volatile boolean closed;
 
-    public MySqlStorage(String runtimeName, MySqlStorageConfig config, HikariDataSource dataSource, FlywayMigrationSummary migrationSummary) {
+    public MySqlStorage(String runtimeName, MySqlStorageConfig config, HikariDataSource dataSource, FlywayMigrationSummary migrationSummary, DebugController debug) {
         this.runtimeName = Objects.requireNonNull(runtimeName, "runtimeName");
         this.config = Objects.requireNonNull(config, "config");
         this.dataSource = Objects.requireNonNull(dataSource, "dataSource");
         this.migrationSummary = Objects.requireNonNull(migrationSummary, "migrationSummary");
+        this.debug = Objects.requireNonNull(debug, "debug");
         this.jdbcExecutor = new JdbcExecutor(dataSource);
         this.transactionRunner = new TransactionRunner(dataSource);
     }
@@ -48,6 +51,10 @@ public final class MySqlStorage implements AutoCloseable {
 
     public FlywayMigrationSummary migrationSummary() {
         return migrationSummary;
+    }
+
+    public DebugController debug() {
+        return debug;
     }
 
     public StorageHealthSnapshot healthSnapshot() {

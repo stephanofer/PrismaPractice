@@ -11,6 +11,7 @@ dependencies {
     api(project(":prismapractice-api"))
     api(project(":prismapractice-config"))
     api(project(":prismapractice-core"))
+    implementation(project(":prismapractice-debug"))
 
     implementation("com.zaxxer:HikariCP:$hikariVersion")
     implementation("com.mysql:mysql-connector-j:$mysqlConnectorVersion")

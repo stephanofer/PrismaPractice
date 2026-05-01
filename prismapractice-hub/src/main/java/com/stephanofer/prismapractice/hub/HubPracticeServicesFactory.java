@@ -82,8 +82,8 @@ final class HubPracticeServicesFactory {
         PlayerPartyIndexRepository playerPartyIndexRepository = new RedisPlayerPartyIndexRepository(redisStorage);
 
         Clock clock = Clock.systemUTC();
-        ProfileService profileService = new ProfileService(profileRepository, clock);
-        PlayerStateService playerStateService = new PlayerStateService(playerStateRepository, playerPresenceRepository, playerOperationLockRepository, clock);
+        ProfileService profileService = new ProfileService(profileRepository, clock, storage.debug());
+        PlayerStateService playerStateService = new PlayerStateService(playerStateRepository, playerPresenceRepository, playerOperationLockRepository, new com.stephanofer.prismapractice.core.application.state.PlayerStateTransitionPolicy(), clock, redisStorage.debug());
         QueueService queueService = new QueueService(queueRepository, queueEntryRepository, matchmakingSnapshotRepository, profileRepository, playerPartyIndexRepository, playerStateService, playerOperationLockRepository, clock);
         MatchmakingService matchmakingService = new MatchmakingService(queueRepository, queueEntryRepository, matchmakingSnapshotRepository, playerStateService, playerOperationLockRepository, clock);
         ArenaAllocationService arenaAllocationService = new ArenaAllocationService(arenaRepository, arenaOperationalStateRepository, arenaReservationRepository, matchmakingService, playerStateService, playerOperationLockRepository, clock, redisStorage.ttlPolicies().arenaLock().multipliedBy(2));
