@@ -4,6 +4,7 @@ import com.stephanofer.prismapractice.api.common.PlayerId;
 import com.stephanofer.prismapractice.config.ConfigManager;
 import com.stephanofer.prismapractice.paper.scoreboard.DefaultScoreboardPlaceholderResolver;
 import com.stephanofer.prismapractice.paper.scoreboard.PaperScoreboardBootstrap;
+import com.stephanofer.prismapractice.paper.scoreboard.PaperScoreboardConfig;
 import com.stephanofer.prismapractice.paper.scoreboard.PaperScoreboardService;
 import com.stephanofer.prismapractice.paper.scoreboard.PlayerScoreboardDataCache;
 import com.stephanofer.prismapractice.paper.scoreboard.ScoreboardUiFocus;
@@ -15,12 +16,14 @@ import java.util.Objects;
 
 public final class HubScoreboardModule {
 
+    private final ConfigManager configManager;
     private final PaperScoreboardService scoreboardService;
     private final ScoreboardUiStateService uiStateService;
     private final PlayerScoreboardDataCache dataCache;
     private final Listener listener;
 
-    private HubScoreboardModule(PaperScoreboardService scoreboardService, ScoreboardUiStateService uiStateService, PlayerScoreboardDataCache dataCache, Listener listener) {
+    private HubScoreboardModule(ConfigManager configManager, PaperScoreboardService scoreboardService, ScoreboardUiStateService uiStateService, PlayerScoreboardDataCache dataCache, Listener listener) {
+        this.configManager = configManager;
         this.scoreboardService = scoreboardService;
         this.uiStateService = uiStateService;
         this.dataCache = dataCache;
@@ -42,7 +45,7 @@ public final class HubScoreboardModule {
                 new DefaultScoreboardPlaceholderResolver()
         );
 
-        return new HubScoreboardModule(scoreboardService, uiStateService, dataCache, new HubScoreboardListener(uiStateService, scoreboardService));
+        return new HubScoreboardModule(configManager, scoreboardService, uiStateService, dataCache, new HubScoreboardListener(uiStateService, scoreboardService));
     }
 
     public void warm(PlayerId playerId) {
@@ -63,6 +66,10 @@ public final class HubScoreboardModule {
 
     public Listener listener() {
         return listener;
+    }
+
+    public void reload() {
+        scoreboardService.reload(configManager.get("hub-scoreboards", PaperScoreboardConfig.class));
     }
 
     public void close() {

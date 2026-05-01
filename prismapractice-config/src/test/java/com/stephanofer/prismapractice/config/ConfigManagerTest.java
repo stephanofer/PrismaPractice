@@ -82,6 +82,22 @@ class ConfigManagerTest {
         assertEquals(150, settings.queueLimit());
     }
 
+    @Test
+    void shouldKeepPreviousConfigIfReloadFails() throws IOException {
+        ConfigManager manager = manager(new ArrayList<>());
+        manager.loadAll();
+        Files.writeString(tempDir.resolve("config.yml"), "config-schema-version: 2\nserver-name: Broken\nqueue:\n  max-entries: -10\nmessages:\n  motd: nope\n");
+
+        try {
+            manager.reloadAll();
+        } catch (ConfigException ignored) {
+        }
+
+        PracticeSettings settings = manager.get("main", PracticeSettings.class);
+        assertEquals("PrismaPractice", settings.serverName());
+        assertEquals(150, settings.queueLimit());
+    }
+
     private ConfigManager manager(List<String> logs) {
         ConfigPlatform platform = ConfigPlatforms.fromClassLoader(tempDir, getClass().getClassLoader(), logs::add);
         ConfigDescriptor<PracticeSettings> descriptor = ConfigDescriptor.builder("main", PracticeSettings.class)

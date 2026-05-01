@@ -2,6 +2,8 @@ package com.stephanofer.prismapractice.hub;
 
 import com.stephanofer.prismapractice.command.PaperCommandServiceContainer;
 import com.stephanofer.prismapractice.command.PaperCommands;
+import com.stephanofer.prismapractice.command.ReloadCoordinator;
+import com.stephanofer.prismapractice.command.ReloadResult;
 import com.stephanofer.prismapractice.config.ConfigManager;
 import com.stephanofer.prismapractice.core.application.arena.ArenaAllocationService;
 import com.stephanofer.prismapractice.core.application.history.HistoryService;
@@ -37,6 +39,7 @@ public final class PrismaPracticeHubPlugin extends JavaPlugin {
     private HubScoreboardModule scoreboardModule;
     private PaperFeedbackService feedbackService;
     private HubUiModule uiModule;
+    private ReloadCoordinator reloadCoordinator;
 
     @Override
     public void onEnable() {
@@ -50,6 +53,7 @@ public final class PrismaPracticeHubPlugin extends JavaPlugin {
             this.scoreboardModule = HubScoreboardModule.create(this, this.configManager, this.practiceServices);
             this.uiModule = HubUiModule.create(this);
             this.hotbarModule = HubHotbarModule.create(this, this.configManager, this.practiceServices, this.scoreboardModule, this.uiModule.menuService());
+            this.reloadCoordinator = createReloadCoordinator();
         } catch (RuntimeException exception) {
             getLogger().severe("Failed to initialize PrismaPractice Hub storage. Disabling plugin.");
             exception.printStackTrace();
@@ -88,6 +92,7 @@ public final class PrismaPracticeHubPlugin extends JavaPlugin {
                 .add(PaperDialogService.class, this.uiModule.dialogService())
                 .add(PaperFeedbackService.class, this.feedbackService)
                 .add(PaperScoreboardService.class, this.scoreboardModule.scoreboardService())
+                .add(ReloadCoordinator.class, this.reloadCoordinator)
                 .add(MatchmakingService.class, this.practiceServices.matchmakingService())
                 .add(ArenaAllocationService.class, this.practiceServices.arenaAllocationService())
                 .add(MatchService.class, this.practiceServices.matchService())
@@ -97,6 +102,35 @@ public final class PrismaPracticeHubPlugin extends JavaPlugin {
                 .build(),
             HubCommandDefinitions.create()
         );
+    }
+
+    private ReloadCoordinator createReloadCoordinator() {
+        // Hot reload stays intentionally scoped to operational content/config. Anything that changes
+        // command trees, listeners, connection pools or bootstrap wiring still requires full restart.
+        return new ReloadCoordinator()
+                .register("config", "base runtime config", () -> {
+                    this.configManager.reloadAll();
+                    return ReloadResult.of("Configuraciones base recargadas.");
+                })
+                .register("feedback", "feedback templates", java.util.List.of("config"), () -> {
+                    this.feedbackService.reload(this.configManager.get("hub-feedback", FeedbackConfig.class));
+                    return ReloadResult.of("Feedback recargado y estados persistentes limpiados.");
+                })
+                .register("scoreboard", "hub scoreboard", java.util.List.of("config"), () -> {
+                    this.scoreboardModule.reload();
+                    return ReloadResult.of("Scoreboard recargado para jugadores online.");
+                })
+                .register("hotbar", "hub hotbar", java.util.List.of("config"), () -> {
+                    this.hotbarModule.reload();
+                    return ReloadResult.of("Hotbar recargada y reaplicada a jugadores online.");
+                })
+                .register("ui", "hub menus and dialogs", () -> {
+                    this.uiModule.dialogService().reload();
+                    if (this.uiModule.menuService().isAvailable()) {
+                        this.uiModule.menuService().reload();
+                    }
+                    return ReloadResult.of("UI recargada.");
+                });
     }
 
     @Override

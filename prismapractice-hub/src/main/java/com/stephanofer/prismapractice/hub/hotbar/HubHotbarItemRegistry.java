@@ -49,6 +49,13 @@ final class HubHotbarItemRegistry {
         return value == null ? Optional.empty() : findItemByKey(value);
     }
 
+    void reload(HubHotbarConfig config) {
+        Objects.requireNonNull(config, "config");
+        profiles.clear();
+        itemsByKey.clear();
+        compile(config);
+    }
+
     private void compile(HubHotbarConfig config) {
         for (HubHotbarProfileConfig profileConfig : config.profiles().values()) {
             Map<Integer, HubCompiledItem> compiledItems = new LinkedHashMap<>();

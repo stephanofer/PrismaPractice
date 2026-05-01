@@ -6,3 +6,7 @@ author: Stephanofer
 api-version: '1.21.8'
 libraries:
   - io.lettuce:lettuce-core:${lettuceVersion}
+permissions:
+  prismapractice.admin.reload:
+    description: Allows operational runtime reloads
+    default: op

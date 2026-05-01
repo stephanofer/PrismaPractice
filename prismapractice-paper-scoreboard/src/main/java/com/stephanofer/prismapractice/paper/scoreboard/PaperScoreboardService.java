@@ -26,12 +26,12 @@ public final class PaperScoreboardService {
 
     private final Plugin plugin;
     private final ScoreboardLibrary scoreboardLibrary;
-    private final PaperScoreboardConfig config;
     private final ScoreboardContextProvider contextProvider;
     private final ScoreboardPlaceholderResolver placeholderResolver;
     private final MiniMessage miniMessage;
     private final Map<UUID, Session> sessions;
-    private final BukkitTask tickerTask;
+    private volatile PaperScoreboardConfig config;
+    private BukkitTask tickerTask;
     private long tickCounter;
 
     public PaperScoreboardService(
@@ -48,7 +48,8 @@ public final class PaperScoreboardService {
         this.placeholderResolver = Objects.requireNonNull(placeholderResolver, "placeholderResolver");
         this.miniMessage = MiniMessage.miniMessage();
         this.sessions = new ConcurrentHashMap<>();
-        this.tickerTask = plugin.getServer().getScheduler().runTaskTimer(plugin, this::tick, config.settings().tickInterval(), config.settings().tickInterval());
+        this.config = Objects.requireNonNull(config, "config");
+        this.tickerTask = startTicker(this.config.settings().tickInterval());
     }
 
     public void refresh(Player player, boolean force) {
@@ -95,6 +96,16 @@ public final class PaperScoreboardService {
         }
     }
 
+    public void reload(PaperScoreboardConfig config) {
+        this.config = Objects.requireNonNull(config, "config");
+        this.tickCounter = 0L;
+        this.tickerTask.cancel();
+        this.tickerTask = startTicker(config.settings().tickInterval());
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            refresh(player, true);
+        }
+    }
+
     public void close() {
         tickerTask.cancel();
         for (Session session : sessions.values()) {
@@ -112,6 +123,10 @@ public final class PaperScoreboardService {
                 refresh(player, false);
             }
         }
+    }
+
+    private BukkitTask startTicker(long tickInterval) {
+        return plugin.getServer().getScheduler().runTaskTimer(plugin, this::tick, tickInterval, tickInterval);
     }
 
     private Optional<ScoreboardSceneConfig> resolveScene(ScoreboardContextSnapshot snapshot) {

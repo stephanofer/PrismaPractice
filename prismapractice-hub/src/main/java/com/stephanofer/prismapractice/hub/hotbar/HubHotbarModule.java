@@ -6,6 +6,7 @@ import com.stephanofer.prismapractice.hub.HubScoreboardModule;
 import com.stephanofer.prismapractice.paper.ui.menu.ZMenuUiService;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -13,17 +14,23 @@ import java.util.Objects;
 
 public final class HubHotbarModule {
 
+    private final ConfigManager configManager;
+    private final HubHotbarItemRegistry registry;
     private final HubHotbarService hotbarService;
     private final HubHotbarActionDispatcher actionDispatcher;
     private final Listener protectionListener;
     private final Listener interactionListener;
 
     private HubHotbarModule(
+            ConfigManager configManager,
+            HubHotbarItemRegistry registry,
             HubHotbarService hotbarService,
             HubHotbarActionDispatcher actionDispatcher,
             Listener protectionListener,
             Listener interactionListener
     ) {
+        this.configManager = configManager;
+        this.registry = registry;
         this.hotbarService = hotbarService;
         this.actionDispatcher = actionDispatcher;
         this.protectionListener = protectionListener;
@@ -47,6 +54,8 @@ public final class HubHotbarModule {
             return false;
         });
         return new HubHotbarModule(
+                configManager,
+                registry,
                 hotbarService,
                 dispatcher,
                 new HubHotbarProtectionListener(hotbarService),
@@ -64,5 +73,10 @@ public final class HubHotbarModule {
 
     public Listener interactionListener() {
         return interactionListener;
+    }
+
+    public void reload() {
+        registry.reload(configManager.get("hub-items", HubHotbarConfig.class));
+        Bukkit.getOnlinePlayers().forEach(player -> hotbarService.refresh(player, true));
     }
 }

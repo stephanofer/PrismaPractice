@@ -41,10 +41,10 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class PaperFeedbackService {
 
     private final Plugin plugin;
-    private final FeedbackConfig config;
     private final MiniMessage miniMessage;
     private final Map<UUID, PlayerFeedbackState> playerStates;
     private final BukkitTask tickerTask;
+    private volatile FeedbackConfig config;
     private long tickCounter;
 
     public PaperFeedbackService(Plugin plugin, FeedbackConfig config) {
@@ -113,6 +113,15 @@ public final class PaperFeedbackService {
         }
         for (BossBarSnapshot snapshot : state.transientBossBars) {
             player.hideBossBar(snapshot.bar);
+        }
+    }
+
+    public void reload(FeedbackConfig config) {
+        this.config = Objects.requireNonNull(config, "config");
+        // Reload is intentionally limited to operational templates. We clear live persistent feedback
+        // so the runtime does not keep showing stale bars created from an older config snapshot.
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            clear(player);
         }
     }
 

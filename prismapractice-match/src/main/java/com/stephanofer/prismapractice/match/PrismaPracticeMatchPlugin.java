@@ -2,6 +2,8 @@ package com.stephanofer.prismapractice.match;
 
 import com.stephanofer.prismapractice.command.PaperCommandServiceContainer;
 import com.stephanofer.prismapractice.command.PaperCommands;
+import com.stephanofer.prismapractice.command.ReloadCoordinator;
+import com.stephanofer.prismapractice.command.ReloadResult;
 import com.stephanofer.prismapractice.api.state.PlayerPresenceRepository;
 import com.stephanofer.prismapractice.api.state.PlayerStateRepository;
 import com.stephanofer.prismapractice.config.ConfigManager;
@@ -25,6 +27,7 @@ public final class PrismaPracticeMatchPlugin extends JavaPlugin {
     private MySqlStorage storage;
     private RedisStorage redisStorage;
     private PaperScoreboardService scoreboardService;
+    private ReloadCoordinator reloadCoordinator;
 
     @Override
     public void onEnable() {
@@ -45,6 +48,7 @@ public final class PrismaPracticeMatchPlugin extends JavaPlugin {
                     new DefaultScoreboardPlaceholderResolver()
             );
             Bukkit.getPluginManager().registerEvents(new MatchScoreboardListener(this, dataCache, this.scoreboardService), this);
+            this.reloadCoordinator = createReloadCoordinator();
         } catch (RuntimeException exception) {
             getLogger().severe("Failed to initialize PrismaPractice Match storage. Disabling plugin.");
             exception.printStackTrace();
@@ -60,9 +64,22 @@ public final class PrismaPracticeMatchPlugin extends JavaPlugin {
                 .add(MySqlStorage.class, this.storage)
                 .add(RedisStorage.class, this.redisStorage)
                 .add(PaperScoreboardService.class, this.scoreboardService)
+                .add(ReloadCoordinator.class, this.reloadCoordinator)
                 .build(),
             MatchCommandDefinitions.create()
         );
+    }
+
+    private ReloadCoordinator createReloadCoordinator() {
+        return new ReloadCoordinator()
+                .register("config", "base runtime config", () -> {
+                    this.configManager.reloadAll();
+                    return ReloadResult.of("Configuraciones base recargadas.");
+                })
+                .register("scoreboard", "match scoreboard", java.util.List.of("config"), () -> {
+                    this.scoreboardService.reload(this.configManager.get("match-scoreboards", com.stephanofer.prismapractice.paper.scoreboard.PaperScoreboardConfig.class));
+                    return ReloadResult.of("Scoreboard de match recargado para jugadores online.");
+                });
     }
 
     @Override

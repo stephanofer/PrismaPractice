@@ -298,6 +298,33 @@ Shared module jars in `target/` are development artifacts, not plugin deployment
 
 ---
 
+## Reload Policy
+
+- comando canónico para runtimes deployables: `/prismapractice`
+- aliases permitidos: `/practice`, `/pp`
+- el reload es **operativo**, no estructural
+
+Se puede meter en reload:
+- configs YAML administrables
+- scoreboards
+- hotbar items
+- feedback templates
+- menús/dialogs/UI
+- caches visuales o de presentación que se puedan reconstruir sin tocar bootstrap
+
+No se debe meter en reload:
+- re-registro de comandos/aliases/permisos del árbol Brigadier
+- listeners o wiring estructural ya registrado en `onEnable`
+- MySQL/Redis pools o bootstrap de storage
+- integraciones que requieran rebootstrap completo del runtime
+- cualquier cambio que reemplace identidades de servicios capturadas por listeners
+
+Regla:
+- si el cambio toca estructura del runtime, corresponde **restart completo del servidor**
+- diseñar nuevas features hot-reloadables preservando identidad de servicios ya conectados y recargando solo estado/config interna
+
+---
+
 ## Current Important Files
 
 - `build.gradle.kts` -> shared Gradle configuration

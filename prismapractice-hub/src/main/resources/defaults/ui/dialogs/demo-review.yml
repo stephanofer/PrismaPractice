@@ -32,7 +32,7 @@ multi-actions:
       1:
         success:
           - type: run_player_command
-            command: "/practice feedback chat dialog-review"
+            command: "/prismapractice feedback chat dialog-review"
   close:
     text: "<green>Listo</green>"
     tooltip: "<gray>Cerrar review</gray>"

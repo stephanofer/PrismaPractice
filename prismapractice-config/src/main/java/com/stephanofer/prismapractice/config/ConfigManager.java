@@ -52,15 +52,16 @@ public final class ConfigManager {
 
     public ConfigBootstrapResult loadAll() {
         ConfigBootstrapResult result = new ConfigBootstrapResult();
-        for (ConfigDescriptor<?> descriptor : descriptors.values()) {
-            loadDescriptor(descriptor, result);
-        }
+        cachedConfigs.putAll(loadManagedConfigs(result));
         return result;
     }
 
     public ConfigBootstrapResult reloadAll() {
+        ConfigBootstrapResult result = new ConfigBootstrapResult();
+        Map<String, ManagedConfig<?>> reloadedConfigs = loadManagedConfigs(result);
         cachedConfigs.clear();
-        return loadAll();
+        cachedConfigs.putAll(reloadedConfigs);
+        return result;
     }
 
     public <T> T get(String id, Class<T> type) {
@@ -84,6 +85,22 @@ public final class ConfigManager {
         try {
             ManagedConfig<T> managedConfig = loadManaged(descriptor, result);
             cachedConfigs.put(descriptor.id(), managedConfig);
+        } catch (IOException exception) {
+            throw new ConfigException("Failed to load configuration '" + descriptor.id() + "'", exception);
+        }
+    }
+
+    private Map<String, ManagedConfig<?>> loadManagedConfigs(ConfigBootstrapResult result) {
+        Map<String, ManagedConfig<?>> loaded = new LinkedHashMap<>();
+        for (ConfigDescriptor<?> descriptor : descriptors.values()) {
+            loaded.put(descriptor.id(), loadManagedUnchecked(descriptor, result));
+        }
+        return loaded;
+    }
+
+    private ManagedConfig<?> loadManagedUnchecked(ConfigDescriptor<?> descriptor, ConfigBootstrapResult result) {
+        try {
+            return loadManaged(descriptor, result);
         } catch (IOException exception) {
             throw new ConfigException("Failed to load configuration '" + descriptor.id() + "'", exception);
         }

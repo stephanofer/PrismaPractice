@@ -6,6 +6,9 @@ import com.stephanofer.prismapractice.command.CommandArgumentSpec;
 import com.stephanofer.prismapractice.command.CommandLiteralSpec;
 import com.stephanofer.prismapractice.command.CommandSenderScope;
 import com.stephanofer.prismapractice.command.CommandSpec;
+import com.stephanofer.prismapractice.command.CommandSuggestions;
+import com.stephanofer.prismapractice.command.ReloadCoordinator;
+import com.stephanofer.prismapractice.command.ReloadReport;
 import com.stephanofer.prismapractice.core.application.state.PlayerStateService;
 import com.stephanofer.prismapractice.hub.ui.HubUiModule;
 import com.stephanofer.prismapractice.paper.feedback.PaperFeedbackService;
@@ -22,26 +25,30 @@ public final class HubCommandDefinitions {
     private HubCommandDefinitions() {
     }
 
+    private static final String ROOT_LITERAL = "prismapractice";
+    private static final List<String> ROOT_ALIASES = List.of("practice", "pp");
+    private static final String RELOAD_PERMISSION = "prismapractice.admin.reload";
+
     public static List<CommandSpec> create() {
-        final CommandSpec practice = CommandSpec.root("practice");
-        practice.aliases(List.of("pp"));
+        final CommandSpec practice = CommandSpec.root(ROOT_LITERAL);
+        practice.aliases(ROOT_ALIASES);
         practice.description("PrismaPractice root command");
-        practice.usage("/practice help");
+        practice.usage("/prismapractice help");
         practice.executes(context -> {
-            context.replyRich("<gold>PrismaPractice Hub</gold> <gray>- usá /practice help</gray>");
+            context.replyRich("<gold>PrismaPractice Hub</gold> <gray>- usá /prismapractice help</gray>");
             return Command.SINGLE_SUCCESS;
         });
 
         practice.child(CommandLiteralSpec.literal("help")
-            .usage("/practice help")
+            .usage("/prismapractice help")
             .executes(context -> {
-                context.replyRich("<yellow>Comandos:</yellow> <gray>/practice help, /practice info</gray>");
+                context.replyRich("<yellow>Comandos:</yellow> <gray>/prismapractice help, /prismapractice info, /prismapractice reload [scope]</gray>");
                 return Command.SINGLE_SUCCESS;
             }));
 
         practice.child(CommandLiteralSpec.literal("info")
             .senderScope(CommandSenderScope.ANY)
-            .usage("/practice info")
+            .usage("/prismapractice info")
             .executes(context -> {
                 StringBuilder message = new StringBuilder("<aqua>Runtime:</aqua> <gray>hub</gray>");
                 if (context.playerSender() != null) {
@@ -59,6 +66,8 @@ public final class HubCommandDefinitions {
                 return Command.SINGLE_SUCCESS;
             }));
 
+        practice.child(reloadCommand());
+
         practice.child(feedbackCommand());
         practice.child(uiCommand());
 
@@ -68,15 +77,15 @@ public final class HubCommandDefinitions {
     private static CommandLiteralSpec uiCommand() {
         CommandLiteralSpec ui = CommandLiteralSpec.literal("ui")
                 .senderScope(CommandSenderScope.PLAYER_ONLY)
-                .usage("/practice ui <menu|dialog|reload|reset>")
+                .usage("/prismapractice ui <menu|dialog|reload|reset>")
                 .executes(context -> {
-                    context.replyRich("<yellow>Usá:</yellow> <gray>/practice ui menu <demo-main|demo-dynamic>, /practice ui dialog <id>, /practice ui reload, /practice ui reset</gray>");
+                    context.replyRich("<yellow>Usá:</yellow> <gray>/prismapractice ui menu <demo-main|demo-dynamic>, /prismapractice ui dialog <id>, /prismapractice ui reload, /prismapractice ui reset</gray>");
                     return Command.SINGLE_SUCCESS;
                 });
 
         ui.children(
                 CommandLiteralSpec.literal("menu")
-                        .usage("/practice ui menu <demo-main|demo-dynamic>")
+                        .usage("/prismapractice ui menu <demo-main|demo-dynamic>")
                         .child(CommandArgumentSpec.argument("menu", StringArgumentType.word())
                                 .executes(context -> {
                                     String menu = context.argument("menu", String.class);
@@ -89,7 +98,7 @@ public final class HubCommandDefinitions {
                                     return Command.SINGLE_SUCCESS;
                                 })),
                 CommandLiteralSpec.literal("dialog")
-                        .usage("/practice ui dialog <id>")
+                        .usage("/prismapractice ui dialog <id>")
                         .child(CommandArgumentSpec.argument("id", StringArgumentType.word())
                                 .executes(context -> {
                                     String dialogId = context.argument("id", String.class);
@@ -104,7 +113,7 @@ public final class HubCommandDefinitions {
                                     return Command.SINGLE_SUCCESS;
                                 })),
                 CommandLiteralSpec.literal("reload")
-                        .usage("/practice ui reload")
+                        .usage("/prismapractice ui reload")
                         .executes(context -> {
                             HubUiModule uiModule = context.service(HubUiModule.class);
                             uiModule.dialogService().reload();
@@ -115,7 +124,7 @@ public final class HubCommandDefinitions {
                             return Command.SINGLE_SUCCESS;
                         }),
                 CommandLiteralSpec.literal("reset")
-                        .usage("/practice ui reset")
+                        .usage("/prismapractice ui reset")
                         .executes(context -> {
                             HubUiModule uiModule = context.service(HubUiModule.class);
                             uiModule.demoStateStore().reset(context.playerSender());
@@ -131,9 +140,9 @@ public final class HubCommandDefinitions {
     private static CommandLiteralSpec feedbackCommand() {
         CommandLiteralSpec feedback = CommandLiteralSpec.literal("feedback")
                 .senderScope(CommandSenderScope.PLAYER_ONLY)
-                .usage("/practice feedback <chat|actionbar|title|sound|bossbar|persistent-actionbar|persistent-bossbar|all|clear>")
+                .usage("/prismapractice feedback <chat|actionbar|title|sound|bossbar|persistent-actionbar|persistent-bossbar|all|clear>")
                 .executes(context -> {
-                    context.replyRich("<yellow>Usá:</yellow> <gray>/practice feedback <chat|actionbar|title|sound|bossbar|persistent-actionbar|persistent-bossbar|all|clear></gray>");
+                    context.replyRich("<yellow>Usá:</yellow> <gray>/prismapractice feedback <chat|actionbar|title|sound|bossbar|persistent-actionbar|persistent-bossbar|all|clear></gray>");
                     return Command.SINGLE_SUCCESS;
                 });
 
@@ -154,7 +163,7 @@ public final class HubCommandDefinitions {
     private static CommandLiteralSpec templateCommand(String literal, String templateKey) {
         return CommandLiteralSpec.literal(literal)
                 .senderScope(CommandSenderScope.PLAYER_ONLY)
-                .usage("/practice feedback " + literal + " [value]")
+                .usage("/prismapractice feedback " + literal + " [value]")
                 .executes(context -> sendTemplate(context.playerSender(), context.service(PaperFeedbackService.class), templateKey, defaultValue(templateKey)))
                 .child(CommandArgumentSpec.argument("value", StringArgumentType.greedyString())
                         .executes(context -> sendTemplate(
@@ -168,7 +177,7 @@ public final class HubCommandDefinitions {
     private static CommandLiteralSpec clearCommand() {
         return CommandLiteralSpec.literal("clear")
                 .senderScope(CommandSenderScope.PLAYER_ONLY)
-                .usage("/practice feedback clear <actionbar|bossbar|all>")
+                .usage("/prismapractice feedback clear <actionbar|bossbar|all>")
                 .children(
                         CommandLiteralSpec.literal("actionbar")
                                 .executes(context -> clearSlot(context.playerSender(), context.service(PaperFeedbackService.class), "test-actionbar", "<green>Persistent actionbar limpiado.</green>")),
@@ -182,6 +191,35 @@ public final class HubCommandDefinitions {
                                     return Command.SINGLE_SUCCESS;
                                 })
                 );
+    }
+
+    private static CommandLiteralSpec reloadCommand() {
+        return CommandLiteralSpec.literal("reload")
+                .senderScope(CommandSenderScope.ANY)
+                .permission(RELOAD_PERMISSION)
+                .usage("/prismapractice reload [scope]")
+                .executes(context -> executeReload(context, ReloadCoordinator.ALL_SCOPE))
+                .child(CommandArgumentSpec.argument("scope", StringArgumentType.word())
+                        .suggests((commandContext, builder) -> CommandSuggestions.completeStrings(builder, commandContext.service(ReloadCoordinator.class).scopes()))
+                        .executes(context -> executeReload(context, context.argument("scope", String.class))));
+    }
+
+    private static int executeReload(com.stephanofer.prismapractice.command.PaperCommandContext context, String scope) {
+        try {
+            ReloadReport report = context.service(ReloadCoordinator.class).reload(scope);
+            for (ReloadReport.Entry entry : report.entries()) {
+                context.replyRich("<gray>-</gray> <aqua>" + entry.scope() + "</aqua> <gray>(" + entry.durationMillis() + "ms)</gray> <gray>" + entry.message() + "</gray>");
+            }
+            if (report.successful()) {
+                context.replyRich("<green>Reload completado.</green> <gray>scope=" + report.requestedScope() + ", total=" + report.durationMillis() + "ms</gray>");
+                return Command.SINGLE_SUCCESS;
+            }
+            context.replyRich("<red>Reload falló.</red> <gray>scope=" + report.failureScope() + ", reason=" + report.failureMessage() + "</gray>");
+            return 0;
+        } catch (IllegalArgumentException exception) {
+            context.replyRich("<red>Scope inválido:</red> <gray>" + exception.getMessage() + "</gray>");
+            return 0;
+        }
     }
 
     private static int sendTemplate(Player player, PaperFeedbackService feedbackService, String templateKey, String value) {
