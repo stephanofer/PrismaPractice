@@ -30,11 +30,11 @@ public final class DebugController {
     );
 
     private final String runtimeName;
-    private final DebugConfig config;
+    private volatile DebugConfig config;
     private final DebugConsoleSink sink;
     private final Clock clock;
     private final DebugWatchRegistry watchRegistry;
-    private final DebugRingBuffer ringBuffer;
+    private volatile DebugRingBuffer ringBuffer;
     private final Map<String, DebugDetailLevel> runtimeCategoryOverrides;
     private final AtomicLong sequence;
     private final boolean noop;
@@ -69,6 +69,26 @@ public final class DebugController {
 
     public boolean enabled() {
         return config.enabled();
+    }
+
+    public void reload(DebugConfig config) {
+        Objects.requireNonNull(config, "config");
+        if (noop) {
+            return;
+        }
+        this.config = config;
+        this.ringBuffer = this.ringBuffer.resize(config.ringBufferSize());
+        info(
+                DebugCategories.RELOAD,
+                DebugDetailLevel.BASIC,
+                "debug.config.reloaded",
+                "Debug configuration reloaded",
+                context()
+                        .field("ringBufferSize", config.ringBufferSize())
+                        .field("consoleSeverity", config.consoleSeverity())
+                        .field("defaultCategoryLevel", config.defaultCategoryLevel())
+                        .build()
+        );
     }
 
     public DebugContext.Builder context() {
@@ -340,6 +360,22 @@ public final class DebugController {
 
         private synchronized int size() {
             return events.size();
+        }
+
+        private synchronized DebugRingBuffer resize(int capacity) {
+            if (this.capacity == capacity) {
+                return this;
+            }
+            DebugRingBuffer resized = new DebugRingBuffer(capacity);
+            int skip = Math.max(0, events.size() - capacity);
+            int index = 0;
+            for (DebugEvent event : events) {
+                if (index++ < skip) {
+                    continue;
+                }
+                resized.events.addLast(event);
+            }
+            return resized;
         }
     }
 }

@@ -13,6 +13,7 @@ import com.stephanofer.prismapractice.data.mysql.repository.MySqlProfileReposito
 import com.stephanofer.prismapractice.data.redis.RedisStorage;
 import com.stephanofer.prismapractice.data.redis.repository.RedisPlayerPresenceRepository;
 import com.stephanofer.prismapractice.data.redis.repository.RedisPlayerStateRepository;
+import com.stephanofer.prismapractice.debug.DebugConfig;
 import com.stephanofer.prismapractice.debug.DebugCategories;
 import com.stephanofer.prismapractice.debug.DebugConsoleSink;
 import com.stephanofer.prismapractice.debug.DebugController;
@@ -86,6 +87,7 @@ public final class PrismaPracticeMatchPlugin extends JavaPlugin {
         return new ReloadCoordinator()
                 .register("config", "base runtime config", () -> {
                     this.configManager.reloadAll();
+                    this.debugController.reload(this.configManager.get("runtime-debug", DebugConfig.class));
                     this.debugController.info(DebugCategories.RELOAD, DebugDetailLevel.BASIC, "reload.config.completed", "Base runtime config reloaded", this.debugController.context().build());
                     return ReloadResult.of("Configuraciones base recargadas.");
                 })
