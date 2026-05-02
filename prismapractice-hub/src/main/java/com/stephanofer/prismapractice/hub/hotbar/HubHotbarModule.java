@@ -17,6 +17,7 @@ public final class HubHotbarModule {
     private final ConfigManager configManager;
     private final HubHotbarItemRegistry registry;
     private final HubHotbarService hotbarService;
+    private final HubStaffModeService staffModeService;
     private final HubHotbarActionDispatcher actionDispatcher;
     private final Listener protectionListener;
     private final Listener interactionListener;
@@ -25,6 +26,7 @@ public final class HubHotbarModule {
             ConfigManager configManager,
             HubHotbarItemRegistry registry,
             HubHotbarService hotbarService,
+            HubStaffModeService staffModeService,
             HubHotbarActionDispatcher actionDispatcher,
             Listener protectionListener,
             Listener interactionListener
@@ -32,6 +34,7 @@ public final class HubHotbarModule {
         this.configManager = configManager;
         this.registry = registry;
         this.hotbarService = hotbarService;
+        this.staffModeService = staffModeService;
         this.actionDispatcher = actionDispatcher;
         this.protectionListener = protectionListener;
         this.interactionListener = interactionListener;
@@ -47,7 +50,8 @@ public final class HubHotbarModule {
         HubHotbarConfig config = configManager.get("hub-items", HubHotbarConfig.class);
         HubHotbarItemRegistry registry = new HubHotbarItemRegistry(plugin, config);
         HubPlayerHotbarContextService contextService = new HubPlayerHotbarContextService(practiceServices.playerStateService(), practiceServices.playerPartyIndexRepository());
-        HubHotbarService hotbarService = new HubHotbarService(contextService, new HubHotbarProfileResolver(), registry);
+        HubStaffModeService staffModeService = new HubStaffModeService();
+        HubHotbarService hotbarService = new HubHotbarService(contextService, new HubHotbarProfileResolver(), registry, staffModeService);
         HubHotbarActionDispatcher dispatcher = new HubHotbarActionDispatcher(plugin, practiceServices.queueService(), new ZMenuHubHotbarMenuController(menuUiService), hotbarService, scoreboardModule);
         dispatcher.registerCustomHandler("layout-exit", (player, action) -> {
             player.sendMessage(Component.text("La edición de layout todavía no está conectada, pero la base del item ya quedó lista.", NamedTextColor.YELLOW));
@@ -57,6 +61,7 @@ public final class HubHotbarModule {
                 configManager,
                 registry,
                 hotbarService,
+                staffModeService,
                 dispatcher,
                 new HubHotbarProtectionListener(hotbarService),
                 new HubHotbarInteractionListener(hotbarService, dispatcher)
@@ -73,6 +78,10 @@ public final class HubHotbarModule {
 
     public Listener interactionListener() {
         return interactionListener;
+    }
+
+    public HubStaffModeService staffModeService() {
+        return staffModeService;
     }
 
     public void reload() {

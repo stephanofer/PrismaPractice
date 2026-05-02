@@ -17,16 +17,19 @@ public final class HubHotbarService {
     private final HubPlayerHotbarContextService contextService;
     private final HubHotbarProfileResolver profileResolver;
     private final HubHotbarItemRegistry registry;
+    private final HubStaffModeService staffModeService;
     private final Map<UUID, AppliedHotbarProfile> appliedProfiles;
 
     public HubHotbarService(
             HubPlayerHotbarContextService contextService,
             HubHotbarProfileResolver profileResolver,
-            HubHotbarItemRegistry registry
+            HubHotbarItemRegistry registry,
+            HubStaffModeService staffModeService
     ) {
         this.contextService = Objects.requireNonNull(contextService, "contextService");
         this.profileResolver = Objects.requireNonNull(profileResolver, "profileResolver");
         this.registry = Objects.requireNonNull(registry, "registry");
+        this.staffModeService = Objects.requireNonNull(staffModeService, "staffModeService");
         this.appliedProfiles = new ConcurrentHashMap<>();
     }
 
@@ -36,6 +39,10 @@ public final class HubHotbarService {
 
     public void refresh(Player player, boolean force) {
         Objects.requireNonNull(player, "player");
+        if (staffModeService.isEnabled(player)) {
+            appliedProfiles.remove(player.getUniqueId());
+            return;
+        }
         PlayerId playerId = new PlayerId(player.getUniqueId());
         HubPlayerHotbarContext context = contextService.snapshot(playerId);
         Optional<HubCompiledHotbarProfile> profile = resolveProfile(context);
@@ -70,6 +77,19 @@ public final class HubHotbarService {
 
     public void clear(Player player) {
         appliedProfiles.remove(player.getUniqueId());
+    }
+
+    public void clearInventory(Player player) {
+        Objects.requireNonNull(player, "player");
+        PlayerInventory inventory = player.getInventory();
+        inventory.clear();
+        inventory.setArmorContents(new org.bukkit.inventory.ItemStack[4]);
+        inventory.setItemInOffHand(null);
+        player.setItemOnCursor(null);
+    }
+
+    public boolean isStaffBypassEnabled(Player player) {
+        return staffModeService.isEnabled(player);
     }
 
     private Optional<HubCompiledHotbarProfile> resolveProfile(HubPlayerHotbarContext context) {

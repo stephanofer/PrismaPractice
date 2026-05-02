@@ -8,6 +8,7 @@ import com.stephanofer.prismapractice.debug.DebugCategories;
 import com.stephanofer.prismapractice.debug.DebugController;
 import com.stephanofer.prismapractice.debug.DebugDetailLevel;
 import com.stephanofer.prismapractice.hub.hotbar.HubHotbarService;
+import com.stephanofer.prismapractice.hub.hotbar.HubStaffModeService;
 import com.stephanofer.prismapractice.paper.feedback.PaperFeedbackService;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -23,15 +24,17 @@ final class HubPlayerLifecycleListener implements Listener {
     private final ProfileService profileService;
     private final PlayerStateService playerStateService;
     private final HubHotbarService hotbarService;
+    private final HubStaffModeService staffModeService;
     private final HubScoreboardModule scoreboardModule;
     private final PaperFeedbackService feedbackService;
     private final DebugController debug;
 
-    HubPlayerLifecycleListener(JavaPlugin plugin, ProfileService profileService, PlayerStateService playerStateService, HubHotbarService hotbarService, HubScoreboardModule scoreboardModule, PaperFeedbackService feedbackService, DebugController debug) {
+    HubPlayerLifecycleListener(JavaPlugin plugin, ProfileService profileService, PlayerStateService playerStateService, HubHotbarService hotbarService, HubStaffModeService staffModeService, HubScoreboardModule scoreboardModule, PaperFeedbackService feedbackService, DebugController debug) {
         this.plugin = Objects.requireNonNull(plugin, "plugin");
         this.profileService = Objects.requireNonNull(profileService, "profileService");
         this.playerStateService = Objects.requireNonNull(playerStateService, "playerStateService");
         this.hotbarService = Objects.requireNonNull(hotbarService, "hotbarService");
+        this.staffModeService = Objects.requireNonNull(staffModeService, "staffModeService");
         this.scoreboardModule = Objects.requireNonNull(scoreboardModule, "scoreboardModule");
         this.feedbackService = Objects.requireNonNull(feedbackService, "feedbackService");
         this.debug = Objects.requireNonNull(debug, "debug");
@@ -60,6 +63,7 @@ final class HubPlayerLifecycleListener implements Listener {
         try {
             PlayerId playerId = new PlayerId(event.getPlayer().getUniqueId());
             debug.debug(DebugCategories.PLAYER_LIFECYCLE, DebugDetailLevel.BASIC, "player.quit.started", "Persisting player quit state", playerContext(event));
+            staffModeService.disable(event.getPlayer());
             hotbarService.clear(event.getPlayer());
             feedbackService.clear(event.getPlayer());
             scoreboardModule.clearUiFocus(playerId);

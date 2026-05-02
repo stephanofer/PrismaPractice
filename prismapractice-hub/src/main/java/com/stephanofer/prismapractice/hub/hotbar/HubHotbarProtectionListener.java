@@ -28,6 +28,9 @@ final class HubHotbarProtectionListener implements Listener {
         if (!(event.getWhoClicked() instanceof Player player)) {
             return;
         }
+        if (hotbarService.isStaffBypassEnabled(player)) {
+            return;
+        }
         AppliedHotbarProfile profile = hotbarService.findAppliedProfile(player).orElse(null);
         if (profile == null || !profile.constraints().denyMove()) {
             return;
@@ -49,6 +52,9 @@ final class HubHotbarProtectionListener implements Listener {
         if (!(event.getWhoClicked() instanceof Player player)) {
             return;
         }
+        if (hotbarService.isStaffBypassEnabled(player)) {
+            return;
+        }
         AppliedHotbarProfile profile = hotbarService.findAppliedProfile(player).orElse(null);
         if (profile == null || !profile.constraints().denyMove()) {
             return;
@@ -65,6 +71,9 @@ final class HubHotbarProtectionListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onDrop(PlayerDropItemEvent event) {
+        if (hotbarService.isStaffBypassEnabled(event.getPlayer())) {
+            return;
+        }
         AppliedHotbarProfile profile = hotbarService.findAppliedProfile(event.getPlayer()).orElse(null);
         if (profile != null && profile.constraints().denyDrop()) {
             event.setCancelled(true);
@@ -73,6 +82,9 @@ final class HubHotbarProtectionListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onSwapOffhand(PlayerSwapHandItemsEvent event) {
+        if (hotbarService.isStaffBypassEnabled(event.getPlayer())) {
+            return;
+        }
         AppliedHotbarProfile profile = hotbarService.findAppliedProfile(event.getPlayer()).orElse(null);
         if (profile != null && profile.constraints().denySwapOffhand()) {
             event.setCancelled(true);
@@ -81,6 +93,9 @@ final class HubHotbarProtectionListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
+        if (hotbarService.isStaffBypassEnabled(event.getPlayer())) {
+            return;
+        }
         AppliedHotbarProfile profile = hotbarService.findAppliedProfile(event.getPlayer()).orElse(null);
         if (profile != null && profile.constraints().denyPlace()) {
             event.setCancelled(true);
@@ -90,6 +105,9 @@ final class HubHotbarProtectionListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPickup(EntityPickupItemEvent event) {
         if (!(event.getEntity() instanceof Player player)) {
+            return;
+        }
+        if (hotbarService.isStaffBypassEnabled(player)) {
             return;
         }
         AppliedHotbarProfile profile = hotbarService.findAppliedProfile(player).orElse(null);

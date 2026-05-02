@@ -26,6 +26,7 @@ import com.stephanofer.prismapractice.feedback.FeedbackConfig;
 import com.stephanofer.prismapractice.hub.command.HubCommandDefinitions;
 import com.stephanofer.prismapractice.hub.hotbar.HubHotbarModule;
 import com.stephanofer.prismapractice.hub.hotbar.HubHotbarService;
+import com.stephanofer.prismapractice.hub.hotbar.HubStaffModeService;
 import com.stephanofer.prismapractice.hub.ui.HubUiModule;
 import com.stephanofer.prismapractice.paper.feedback.PaperFeedbackService;
 import com.stephanofer.prismapractice.paper.scoreboard.PaperScoreboardService;
@@ -73,7 +74,7 @@ public final class PrismaPracticeHubPlugin extends JavaPlugin {
         }
 
         Bukkit.getPluginManager().registerEvents(
-                new HubPlayerLifecycleListener(this, this.practiceServices.profileService(), this.practiceServices.playerStateService(), this.hotbarModule.hotbarService(), this.scoreboardModule, this.feedbackService, this.debugController),
+                new HubPlayerLifecycleListener(this, this.practiceServices.profileService(), this.practiceServices.playerStateService(), this.hotbarModule.hotbarService(), this.hotbarModule.staffModeService(), this.scoreboardModule, this.feedbackService, this.debugController),
                 this
         );
         Bukkit.getPluginManager().registerEvents(
@@ -99,6 +100,7 @@ public final class PrismaPracticeHubPlugin extends JavaPlugin {
                 .add(PlayerStateService.class, this.practiceServices.playerStateService())
                 .add(QueueService.class, this.practiceServices.queueService())
                 .add(HubHotbarService.class, this.hotbarModule.hotbarService())
+                .add(HubStaffModeService.class, this.hotbarModule.staffModeService())
                 .add(HubUiModule.class, this.uiModule)
                 .add(ZMenuUiService.class, this.uiModule.menuService())
                 .add(PaperDialogService.class, this.uiModule.dialogService())

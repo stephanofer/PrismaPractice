@@ -11,6 +11,8 @@ import com.stephanofer.prismapractice.command.DebugCommandDefinitions;
 import com.stephanofer.prismapractice.command.ReloadCoordinator;
 import com.stephanofer.prismapractice.command.ReloadReport;
 import com.stephanofer.prismapractice.core.application.state.PlayerStateService;
+import com.stephanofer.prismapractice.hub.hotbar.HubHotbarService;
+import com.stephanofer.prismapractice.hub.hotbar.HubStaffModeService;
 import com.stephanofer.prismapractice.hub.ui.HubUiModule;
 import com.stephanofer.prismapractice.paper.feedback.PaperFeedbackService;
 import com.stephanofer.prismapractice.paper.ui.dialog.PaperDialogService;
@@ -29,6 +31,7 @@ public final class HubCommandDefinitions {
     private static final String ROOT_LITERAL = "prismapractice";
     private static final List<String> ROOT_ALIASES = List.of("practice", "pp");
     private static final String RELOAD_PERMISSION = "prismapractice.admin.reload";
+    private static final String STAFF_MODE_PERMISSION = "prismapractice.staffmode";
 
     public static List<CommandSpec> create() {
         final CommandSpec practice = CommandSpec.root(ROOT_LITERAL);
@@ -68,6 +71,7 @@ public final class HubCommandDefinitions {
             }));
 
         practice.child(reloadCommand());
+        practice.child(staffModeCommand());
         DebugCommandDefinitions.appendToRoot(practice, "hub");
 
         practice.child(feedbackCommand());
@@ -204,6 +208,28 @@ public final class HubCommandDefinitions {
                 .child(CommandArgumentSpec.argument("scope", StringArgumentType.word())
                         .suggests((commandContext, builder) -> CommandSuggestions.completeStrings(builder, commandContext.service(ReloadCoordinator.class).scopes()))
                         .executes(context -> executeReload(context, context.argument("scope", String.class))));
+    }
+
+    private static CommandLiteralSpec staffModeCommand() {
+        return CommandLiteralSpec.literal("staffmode")
+                .senderScope(CommandSenderScope.PLAYER_ONLY)
+                .permission(STAFF_MODE_PERMISSION)
+                .usage("/prismapractice staffmode")
+                .executes(context -> {
+                    Player player = context.playerSender();
+                    HubStaffModeService staffModeService = context.service(HubStaffModeService.class);
+                    HubHotbarService hotbarService = context.service(HubHotbarService.class);
+                    boolean enabled = staffModeService.toggle(player);
+                    if (enabled) {
+                        hotbarService.clear(player);
+                        hotbarService.clearInventory(player);
+                        context.replyRich("<green>Staff mode activado.</green> <gray>Las protecciones del hub quedaron deshabilitadas para vos.</gray>");
+                        return Command.SINGLE_SUCCESS;
+                    }
+                    hotbarService.refresh(player, true);
+                    context.replyRich("<yellow>Staff mode desactivado.</yellow> <gray>Se restauraron las protecciones y la hotbar del hub.</gray>");
+                    return Command.SINGLE_SUCCESS;
+                });
     }
 
     private static int executeReload(com.stephanofer.prismapractice.command.PaperCommandContext context, String scope) {

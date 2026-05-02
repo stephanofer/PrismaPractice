@@ -2,6 +2,7 @@ package com.stephanofer.prismapractice.hub.hotbar;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
@@ -110,6 +111,6 @@ final class HubHotbarItemRegistry {
     }
 
     private Component component(String input) {
-        return miniMessage.deserialize(input);
+        return miniMessage.deserialize(input).decoration(TextDecoration.ITALIC, false);
     }
 }
