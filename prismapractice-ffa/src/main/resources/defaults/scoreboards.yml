@@ -1,6 +1,7 @@
-config-schema-version: 1
+config-schema-version: 2
 
 settings:
+  enabled: true
   tick-interval: 20
   default-refresh-ticks: 20
   hide-when-disabled-in-settings: true

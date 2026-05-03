@@ -27,7 +27,9 @@ public final class PaperScoreboardConfigDescriptorFactory {
         return ConfigDescriptor.builder(id, PaperScoreboardConfig.class)
                 .filePath(filePath)
                 .bundledResourcePath(bundledResourcePath)
-                .schemaVersion(1)
+                .schemaVersion(2)
+                .migration(1, root -> {
+                })
                 .mapper(PaperScoreboardConfigDescriptorFactory::map)
                 .validator(PaperScoreboardConfigDescriptorFactory::validate)
                 .build();
@@ -36,6 +38,7 @@ public final class PaperScoreboardConfigDescriptorFactory {
     private static PaperScoreboardConfig map(Map<String, Object> root) {
         Map<String, Object> settingsSection = YamlConfigHelper.section(root, "settings");
         PaperScoreboardSettings settings = new PaperScoreboardSettings(
+                bool(settingsSection, "enabled", true),
                 integer(settingsSection, "tick-interval", 20),
                 integer(settingsSection, "default-refresh-ticks", 20),
                 bool(settingsSection, "hide-when-disabled-in-settings", true),
@@ -55,6 +58,7 @@ public final class PaperScoreboardConfigDescriptorFactory {
             Map<String, Object> conditionsSection = YamlConfigHelper.section(sceneSection, "conditions");
             ScoreboardSceneConfig scene = new ScoreboardSceneConfig(
                     entry.getKey(),
+                    bool(sceneSection, "enabled", true),
                     integer(sceneSection, "priority", 0),
                     integer(refreshSection, "interval-ticks", settings.defaultRefreshTicks()),
                     new ScoreboardSceneConditions(
@@ -70,6 +74,9 @@ public final class PaperScoreboardConfigDescriptorFactory {
                     string(sceneSection, "title", "<gray>Practice"),
                     stringList(sceneSection, "lines")
             );
+            if (!scene.enabled()) {
+                continue;
+            }
             scenes.add(scene);
             scenesByKey.put(scene.key(), scene);
         }

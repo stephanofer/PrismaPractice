@@ -7,6 +7,7 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemFlag;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -23,7 +24,8 @@ public final class HubHotbarConfigDescriptorFactory {
         return ConfigDescriptor.builder("hub-items", HubHotbarConfig.class)
                 .filePath("hub-items.yml")
                 .bundledResourcePath("defaults/hub-items.yml")
-                .schemaVersion(1)
+                .schemaVersion(2)
+                .migration(1, HubHotbarConfigDescriptorFactory::migrateSlotKeyedItemsToStableKeys)
                 .mapper(HubHotbarConfigDescriptorFactory::map)
                 .validator(HubHotbarConfigDescriptorFactory::validate)
                 .build();
@@ -39,6 +41,10 @@ public final class HubHotbarConfigDescriptorFactory {
 
             @SuppressWarnings("unchecked")
             Map<String, Object> profile = (Map<String, Object>) rawProfile;
+            boolean profileEnabled = bool(profile, "enabled", true);
+            if (!profileEnabled) {
+                continue;
+            }
             Map<String, Object> constraintsSection = YamlConfigHelper.section(profile, "constraints");
             HubHotbarConstraints constraints = new HubHotbarConstraints(
                     bool(constraintsSection, "deny-move", true),
@@ -49,15 +55,19 @@ public final class HubHotbarConfigDescriptorFactory {
             );
 
             Map<String, Object> itemsSection = YamlConfigHelper.section(profile, "items");
-            Map<Integer, HubHotbarItemConfig> items = new LinkedHashMap<>();
+            Map<String, HubHotbarItemConfig> items = new LinkedHashMap<>();
             for (Map.Entry<String, Object> itemEntry : itemsSection.entrySet()) {
                 if (!(itemEntry.getValue() instanceof Map<?, ?> rawItem)) {
                     throw new ConfigException("Item definition at profiles." + entry.getKey() + ".items." + itemEntry.getKey() + " must be a map");
                 }
                 @SuppressWarnings("unchecked")
                 Map<String, Object> itemSection = (Map<String, Object>) rawItem;
-                int slot = Integer.parseInt(itemEntry.getKey());
-                String itemKey = string(itemSection, "key", entry.getKey() + "-slot-" + slot);
+                boolean itemEnabled = bool(itemSection, "enabled", true);
+                if (!itemEnabled) {
+                    continue;
+                }
+                String itemKey = itemEntry.getKey();
+                int slot = integer(itemSection, "slot", -1);
                 Material material = parseMaterial(YamlConfigHelper.string(itemSection, "material"));
                 Map<String, Object> actionSection = YamlConfigHelper.section(itemSection, "action");
                 HubHotbarActionConfig action = new HubHotbarActionConfig(
@@ -71,8 +81,9 @@ public final class HubHotbarConfigDescriptorFactory {
                         string(actionSection, "custom-key", "")
                 );
 
-                items.put(slot, new HubHotbarItemConfig(
+                items.put(itemKey, new HubHotbarItemConfig(
                         itemKey,
+                        true,
                         slot,
                         material,
                         integer(itemSection, "amount", 1),
@@ -88,6 +99,7 @@ public final class HubHotbarConfigDescriptorFactory {
 
             profiles.put(entry.getKey(), new HubHotbarProfileConfig(
                     entry.getKey(),
+                    true,
                     integer(profile, "selected-slot", 0),
                     bool(profile, "reset-inventory", true),
                     constraints,
@@ -107,17 +119,68 @@ public final class HubHotbarConfigDescriptorFactory {
             if (profile.selectedSlot() < 0 || profile.selectedSlot() > 8) {
                 throw new ConfigException("profiles." + profile.key() + ".selected-slot must be between 0 and 8");
             }
-            for (Map.Entry<Integer, HubHotbarItemConfig> entry : profile.items().entrySet()) {
-                int slot = entry.getKey();
+            Map<Integer, String> slots = new LinkedHashMap<>();
+            for (Map.Entry<String, HubHotbarItemConfig> entry : profile.items().entrySet()) {
+                String itemKey = entry.getKey();
                 HubHotbarItemConfig item = entry.getValue();
+                int slot = item.slot();
                 if (slot < 0 || slot > 8) {
-                    throw new ConfigException("profiles." + profile.key() + ".items slot must be between 0 and 8");
+                    throw new ConfigException("profiles." + profile.key() + ".items." + itemKey + ".slot must be between 0 and 8");
                 }
                 if (item.amount() < 1 || item.amount() > 64) {
-                    throw new ConfigException("profiles." + profile.key() + ".items." + slot + ".amount must be between 1 and 64");
+                    throw new ConfigException("profiles." + profile.key() + ".items." + itemKey + ".amount must be between 1 and 64");
+                }
+                String previousItem = slots.putIfAbsent(slot, itemKey);
+                if (previousItem != null) {
+                    throw new ConfigException("profiles." + profile.key() + ".items defines duplicate active slot " + slot + " for '" + previousItem + "' and '" + itemKey + "'");
                 }
                 validateAction(profile.key(), slot, item.action());
             }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void migrateSlotKeyedItemsToStableKeys(Map<String, Object> root) {
+        Map<String, Object> profilesSection = YamlConfigHelper.section(root, "profiles");
+        for (Object rawProfile : profilesSection.values()) {
+            if (!(rawProfile instanceof Map<?, ?> rawProfileMap)) {
+                continue;
+            }
+            Map<String, Object> profile = (Map<String, Object>) rawProfileMap;
+            Map<String, Object> itemsSection = YamlConfigHelper.section(profile, "items");
+            if (itemsSection.isEmpty()) {
+                continue;
+            }
+
+            List<Map.Entry<String, Object>> orderedEntries = new ArrayList<>(itemsSection.entrySet());
+            orderedEntries.sort(Comparator.comparingInt(entry -> parseLegacySlot(entry.getKey())));
+
+            Map<String, Object> migratedItems = new LinkedHashMap<>();
+            for (Map.Entry<String, Object> itemEntry : orderedEntries) {
+                if (!(itemEntry.getValue() instanceof Map<?, ?> rawItemMap)) {
+                    migratedItems.put(itemEntry.getKey(), itemEntry.getValue());
+                    continue;
+                }
+                Map<String, Object> item = new LinkedHashMap<>((Map<String, Object>) rawItemMap);
+                int slot = parseLegacySlot(itemEntry.getKey());
+                String preferredKey = string(item, "key", "slot-" + slot).trim();
+                String stableKey = preferredKey.isBlank() ? "slot-" + slot : preferredKey;
+                if (migratedItems.containsKey(stableKey)) {
+                    stableKey = stableKey + "-slot-" + slot;
+                }
+                item.put("slot", slot);
+                item.remove("key");
+                migratedItems.put(stableKey, item);
+            }
+            profile.put("items", migratedItems);
+        }
+    }
+
+    private static int parseLegacySlot(String rawValue) {
+        try {
+            return Integer.parseInt(rawValue);
+        } catch (NumberFormatException exception) {
+            return Integer.MAX_VALUE;
         }
     }
 

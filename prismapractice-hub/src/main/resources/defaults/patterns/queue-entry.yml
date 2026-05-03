@@ -1,0 +1,52 @@
+name: "prismapractice-queue-entry"
+type: BUTTON
+
+button:
+  type: PP_QUEUE_ENTRY
+  slot: "%entry_slot%"
+  queue-id: "%entry_queue_id%"
+  close-on-success: true
+  refresh-menu-on-click: true
+  sound: ui.button.click
+  sound-category: MASTER
+  pitch: 1.0
+  volume: 1.0
+  item:
+    material: "%entry_material%"
+    name: "%entry_name%"
+    lore:
+      - "<gray>Jugadores en cola:</gray> <white>%pp_queue_players%</white>"
+      - "<gray>Estado:</gray> <white>%pp_queue_status_text%</white>"
+      - ""
+      - "<dark_gray>%pp_queue_action_text%</dark_gray>"
+  current-queue-item:
+    material: LIME_DYE
+    name: "<green><bold>%entry_name%</bold></green>"
+    lore:
+      - "<gray>Jugadores en cola:</gray> <white>%pp_queue_players%</white>"
+      - "<gray>Estado:</gray> <green>%pp_queue_status_text%</green>"
+      - ""
+      - "<dark_gray>%pp_queue_action_text%</dark_gray>"
+  other-queue-item:
+    material: YELLOW_DYE
+    name: "<yellow><bold>%entry_name%</bold></yellow>"
+    lore:
+      - "<gray>Estado:</gray> <yellow>%pp_queue_status_text%</yellow>"
+      - "<gray>Cola actual:</gray> <white>%pp_active_queue_name%</white>"
+      - ""
+      - "<dark_gray>%pp_queue_action_text%</dark_gray>"
+  disabled-item:
+    material: GRAY_DYE
+    name: "<gray><bold>%entry_name%</bold></gray>"
+    lore:
+      - "<gray>Estado:</gray> <red>%pp_queue_status_text%</red>"
+      - ""
+      - "<dark_gray>%pp_queue_action_text%</dark_gray>"
+  missing-item:
+    material: BARRIER
+    name: "<red><bold>%entry_name%</bold></red>"
+    lore:
+      - "<gray>Estado:</gray> <red>%pp_queue_status_text%</red>"
+      - "<gray>ID:</gray> <white>%pp_queue_id%</white>"
+      - ""
+      - "<dark_gray>%pp_queue_action_text%</dark_gray>"

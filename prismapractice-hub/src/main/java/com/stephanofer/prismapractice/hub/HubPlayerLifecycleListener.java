@@ -23,20 +23,26 @@ final class HubPlayerLifecycleListener implements Listener {
     private final JavaPlugin plugin;
     private final ProfileService profileService;
     private final PlayerStateService playerStateService;
+    private final HubQueueExitService queueExitService;
     private final HubHotbarService hotbarService;
     private final HubStaffModeService staffModeService;
     private final HubScoreboardModule scoreboardModule;
     private final PaperFeedbackService feedbackService;
+    private final HubLobbyService lobbyService;
+    private final HubQueueFeedbackCoordinator queueFeedbackCoordinator;
     private final DebugController debug;
 
-    HubPlayerLifecycleListener(JavaPlugin plugin, ProfileService profileService, PlayerStateService playerStateService, HubHotbarService hotbarService, HubStaffModeService staffModeService, HubScoreboardModule scoreboardModule, PaperFeedbackService feedbackService, DebugController debug) {
+    HubPlayerLifecycleListener(JavaPlugin plugin, ProfileService profileService, PlayerStateService playerStateService, HubQueueExitService queueExitService, HubHotbarService hotbarService, HubStaffModeService staffModeService, HubScoreboardModule scoreboardModule, PaperFeedbackService feedbackService, HubLobbyService lobbyService, HubQueueFeedbackCoordinator queueFeedbackCoordinator, DebugController debug) {
         this.plugin = Objects.requireNonNull(plugin, "plugin");
         this.profileService = Objects.requireNonNull(profileService, "profileService");
         this.playerStateService = Objects.requireNonNull(playerStateService, "playerStateService");
+        this.queueExitService = Objects.requireNonNull(queueExitService, "queueExitService");
         this.hotbarService = Objects.requireNonNull(hotbarService, "hotbarService");
         this.staffModeService = Objects.requireNonNull(staffModeService, "staffModeService");
         this.scoreboardModule = Objects.requireNonNull(scoreboardModule, "scoreboardModule");
         this.feedbackService = Objects.requireNonNull(feedbackService, "feedbackService");
+        this.lobbyService = Objects.requireNonNull(lobbyService, "lobbyService");
+        this.queueFeedbackCoordinator = Objects.requireNonNull(queueFeedbackCoordinator, "queueFeedbackCoordinator");
         this.debug = Objects.requireNonNull(debug, "debug");
     }
 
@@ -49,8 +55,16 @@ final class HubPlayerLifecycleListener implements Listener {
             scoreboardModule.warm(playerId);
             playerStateService.ensureOnlineHubState(playerId, plugin.getServer().getName(), RuntimeType.HUB);
             plugin.getServer().getScheduler().runTask(plugin, () -> {
+                lobbyService.teleportToLobby(event.getPlayer());
+                event.getPlayer().setFoodLevel(20);
+                event.getPlayer().setSaturation(20.0F);
                 hotbarService.refresh(event.getPlayer(), true);
                 scoreboardModule.scoreboardService().refresh(event.getPlayer(), true);
+                if (playerStateService.findCurrentState(playerId).map(com.stephanofer.prismapractice.api.state.PlayerState::status).orElse(null) == com.stephanofer.prismapractice.api.state.PlayerStatus.IN_QUEUE) {
+                    queueFeedbackCoordinator.track(event.getPlayer());
+                } else {
+                    queueFeedbackCoordinator.clear(event.getPlayer());
+                }
             });
             debug.debug(DebugCategories.PLAYER_LIFECYCLE, DebugDetailLevel.BASIC, "player.join.completed", "Player join state bootstrapped", playerContext(event));
         } catch (RuntimeException exception) {
@@ -63,6 +77,7 @@ final class HubPlayerLifecycleListener implements Listener {
         try {
             PlayerId playerId = new PlayerId(event.getPlayer().getUniqueId());
             debug.debug(DebugCategories.PLAYER_LIFECYCLE, DebugDetailLevel.BASIC, "player.quit.started", "Persisting player quit state", playerContext(event));
+            queueExitService.leave(event.getPlayer(), HubQueueExitCause.DISCONNECT);
             staffModeService.disable(event.getPlayer());
             hotbarService.clear(event.getPlayer());
             feedbackService.clear(event.getPlayer());

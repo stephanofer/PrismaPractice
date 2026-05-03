@@ -1,4 +1,4 @@
-config-schema-version: 1
+config-schema-version: 2
 
 profiles:
   default_hub:
@@ -11,8 +11,8 @@ profiles:
       deny-pickup: true
       deny-swap-offhand: true
     items:
-      "0":
-        key: unranked-queue-menu
+      unranked-queue-menu:
+        slot: 0
         material: NETHER_STAR
         amount: 1
         name: "<gradient:#5ac8fa:#3b82f6><bold>Unranked</bold></gradient>"
@@ -26,8 +26,8 @@ profiles:
           target: unranked
           plugin: zMenu
           page: 1
-      "1":
-        key: ranked-queue-menu
+      ranked-queue-menu:
+        slot: 1
         material: DIAMOND_SWORD
         amount: 1
         name: "<gradient:#f59e0b:#ef4444><bold>Ranked</bold></gradient>"
@@ -41,8 +41,8 @@ profiles:
           target: ranked
           plugin: zMenu
           page: 1
-      "4":
-        key: party-menu
+      party-menu:
+        slot: 4
         material: PLAYER_HEAD
         amount: 1
         name: "<aqua><bold>Party</bold></aqua>"
@@ -56,8 +56,8 @@ profiles:
           target: party
           plugin: zMenu
           page: 1
-      "7":
-        key: settings-menu
+      settings-menu:
+        slot: 7
         material: COMPARATOR
         amount: 1
         name: "<yellow><bold>Settings</bold></yellow>"
@@ -71,8 +71,8 @@ profiles:
           target: settings
           plugin: zMenu
           page: 1
-      "8":
-        key: profile-menu
+      profile-menu:
+        slot: 8
         material: BOOK
         amount: 1
         name: "<green><bold>Profile</bold></green>"
@@ -97,8 +97,24 @@ profiles:
       deny-pickup: true
       deny-swap-offhand: true
     items:
-      "8":
-        key: leave-queue
+      queue-context-browser:
+        slot: 0
+        material: NETHER_STAR
+        amount: 1
+        name: "<yellow><bold>Cambiar cola</bold></yellow>"
+        lore:
+          - "<gray>Abrí el navegador correspondiente"
+          - "<dark_gray>a tu cola actual."
+        hide-attributes: true
+        action:
+          type: CUSTOM
+          trigger: RIGHT_CLICK
+          custom-key: queue-context-source
+          arguments:
+            - "unranked=unranked-queue-menu"
+            - "ranked=ranked-queue-menu"
+      leave-queue:
+        slot: 8
         material: RED_DYE
         amount: 1
         name: "<red><bold>Salir de la cola</bold></red>"
@@ -120,8 +136,8 @@ profiles:
       deny-pickup: true
       deny-swap-offhand: true
     items:
-      "0":
-        key: party-members-menu
+      party-members-menu:
+        slot: 0
         material: PLAYER_HEAD
         amount: 1
         name: "<aqua><bold>Party</bold></aqua>"
@@ -135,8 +151,8 @@ profiles:
           target: party
           plugin: zMenu
           page: 1
-      "8":
-        key: leave-party-queue
+      leave-party-queue:
+        slot: 8
         material: RED_DYE
         amount: 1
         name: "<red><bold>Salir de la cola</bold></red>"
@@ -158,8 +174,8 @@ profiles:
       deny-pickup: true
       deny-swap-offhand: true
     items:
-      "0":
-        key: party-leader-menu
+      party-leader-menu:
+        slot: 0
         material: PLAYER_HEAD
         amount: 1
         name: "<aqua><bold>Party Leader</bold></aqua>"
@@ -184,8 +200,8 @@ profiles:
       deny-pickup: true
       deny-swap-offhand: true
     items:
-      "8":
-        key: layout-exit
+      layout-exit:
+        slot: 8
         material: LIME_DYE
         amount: 1
         name: "<green><bold>Guardar y salir</bold></green>"

@@ -1,0 +1,21 @@
+name: "prismapractice-queue-frame"
+size: 27
+
+items:
+  filler:
+    is-permanent: true
+    slots:
+      - 0-8
+      - 18-26
+    item:
+      material: LIGHT_BLUE_STAINED_GLASS_PANE
+      name: "<gray>"
+  info:
+    is-permanent: true
+    slot: 22
+    item:
+      material: COMPARATOR
+      name: "<yellow><bold>Tip</bold></yellow>"
+      lore:
+        - "<gray>Elegí un modo para entrar"
+        - "<gray>a su cola competitiva."

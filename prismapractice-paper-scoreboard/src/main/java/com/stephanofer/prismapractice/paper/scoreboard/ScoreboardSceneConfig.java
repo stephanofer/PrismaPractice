@@ -5,6 +5,7 @@ import java.util.Objects;
 
 public record ScoreboardSceneConfig(
         String key,
+        boolean enabled,
         int priority,
         int refreshIntervalTicks,
         ScoreboardSceneConditions conditions,

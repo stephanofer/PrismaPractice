@@ -44,6 +44,9 @@ public final class PrismaPracticeHubPlugin extends JavaPlugin {
     private HubHotbarModule hotbarModule;
     private HubScoreboardModule scoreboardModule;
     private PaperFeedbackService feedbackService;
+    private HubLobbyService lobbyService;
+    private HubQueueFeedbackCoordinator queueFeedbackCoordinator;
+    private HubQueueExitService queueExitService;
     private HubUiModule uiModule;
     private ReloadCoordinator reloadCoordinator;
     private DebugController debugController;
@@ -58,9 +61,14 @@ public final class PrismaPracticeHubPlugin extends JavaPlugin {
             this.debugController = runtime.debugController();
             this.practiceServices = HubPracticeServicesFactory.create(this.storage, this.redisStorage);
             this.feedbackService = new PaperFeedbackService(this, this.configManager.get("hub-feedback", FeedbackConfig.class));
+            this.lobbyService = new HubLobbyService(this, this.configManager);
+            this.queueFeedbackCoordinator = new HubQueueFeedbackCoordinator(this, this.practiceServices.queueRepository(), this.practiceServices.queueEntryRepository(), this.feedbackService);
             this.scoreboardModule = HubScoreboardModule.create(this, this.configManager, this.debugController, this.practiceServices);
-            this.uiModule = HubUiModule.create(this);
-            this.hotbarModule = HubHotbarModule.create(this, this.configManager, this.practiceServices, this.scoreboardModule, this.uiModule.menuService());
+            this.uiModule = HubUiModule.create(this, this.practiceServices, this.scoreboardModule, this.feedbackService, this.queueFeedbackCoordinator);
+            this.hotbarModule = HubHotbarModule.create(this, this.configManager, this.practiceServices, this.scoreboardModule, this.uiModule.menuService(), this.feedbackService, this.queueFeedbackCoordinator);
+            this.queueExitService = new HubQueueExitService(this.practiceServices.queueService(), this.hotbarModule.hotbarService(), this.scoreboardModule, this.feedbackService, this.queueFeedbackCoordinator);
+            this.hotbarModule.bindQueueExitService(this.queueExitService);
+            this.uiModule.bindHotbarService(this.hotbarModule.hotbarService());
             this.reloadCoordinator = createReloadCoordinator();
             this.debugController.info(DebugCategories.BOOTSTRAP, DebugDetailLevel.BASIC, "plugin.enable.completed", "Hub plugin initialized", this.debugController.context().build());
         } catch (RuntimeException exception) {
@@ -74,7 +82,7 @@ public final class PrismaPracticeHubPlugin extends JavaPlugin {
         }
 
         Bukkit.getPluginManager().registerEvents(
-                new HubPlayerLifecycleListener(this, this.practiceServices.profileService(), this.practiceServices.playerStateService(), this.hotbarModule.hotbarService(), this.hotbarModule.staffModeService(), this.scoreboardModule, this.feedbackService, this.debugController),
+                new HubPlayerLifecycleListener(this, this.practiceServices.profileService(), this.practiceServices.playerStateService(), this.queueExitService, this.hotbarModule.hotbarService(), this.hotbarModule.staffModeService(), this.scoreboardModule, this.feedbackService, this.lobbyService, this.queueFeedbackCoordinator, this.debugController),
                 this
         );
         Bukkit.getPluginManager().registerEvents(
@@ -87,6 +95,7 @@ public final class PrismaPracticeHubPlugin extends JavaPlugin {
         );
         Bukkit.getPluginManager().registerEvents(this.scoreboardModule.listener(), this);
         Bukkit.getPluginManager().registerEvents(this.uiModule.dialogListener(), this);
+        Bukkit.getPluginManager().registerEvents(new HubSafetyListener(this, this.lobbyService, this.practiceServices.playerStateService(), this.queueExitService, this.hotbarModule.hotbarService(), this.scoreboardModule), this);
 
         PaperCommands.register(
             this,
@@ -105,6 +114,9 @@ public final class PrismaPracticeHubPlugin extends JavaPlugin {
                 .add(ZMenuUiService.class, this.uiModule.menuService())
                 .add(PaperDialogService.class, this.uiModule.dialogService())
                 .add(PaperFeedbackService.class, this.feedbackService)
+                .add(HubLobbyService.class, this.lobbyService)
+                .add(HubQueueExitService.class, this.queueExitService)
+                .add(HubScoreboardModule.class, this.scoreboardModule)
                 .add(PaperScoreboardService.class, this.scoreboardModule.scoreboardService())
                 .add(ReloadCoordinator.class, this.reloadCoordinator)
                 .add(MatchmakingService.class, this.practiceServices.matchmakingService())
@@ -133,6 +145,11 @@ public final class PrismaPracticeHubPlugin extends JavaPlugin {
                     this.debugController.info(DebugCategories.RELOAD, DebugDetailLevel.BASIC, "reload.feedback.completed", "Feedback templates reloaded", this.debugController.context().build());
                     return ReloadResult.of("Feedback recargado y estados persistentes limpiados.");
                 })
+                .register("lobby", "hub lobby config", java.util.List.of("config"), () -> {
+                    this.lobbyService.reload();
+                    this.debugController.info(DebugCategories.RELOAD, DebugDetailLevel.BASIC, "reload.lobby.completed", "Hub lobby reloaded", this.debugController.context().build());
+                    return ReloadResult.of("Lobby del hub recargado.");
+                })
                 .register("scoreboard", "hub scoreboard", java.util.List.of("config"), () -> {
                     this.scoreboardModule.reload();
                     this.debugController.info(DebugCategories.RELOAD, DebugDetailLevel.BASIC, "reload.scoreboard.completed", "Hub scoreboard reloaded", this.debugController.context().build());
@@ -160,6 +177,9 @@ public final class PrismaPracticeHubPlugin extends JavaPlugin {
         }
         if (this.uiModule != null) {
             this.uiModule.close();
+        }
+        if (this.queueFeedbackCoordinator != null) {
+            this.queueFeedbackCoordinator.close();
         }
         if (this.feedbackService != null) {
             this.feedbackService.close();

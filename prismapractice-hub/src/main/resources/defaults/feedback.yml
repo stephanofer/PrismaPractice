@@ -87,3 +87,63 @@ templates:
         color: GREEN
         overlay: PROGRESS
         duration-ticks: 50
+
+  queue-join-success:
+    deliveries:
+      - channel: CHAT
+        lines:
+          - "<green>Entraste a la cola:</green> <white>%queue_name%</white>"
+
+  queue-status-persistent:
+    deliveries:
+      - channel: ACTION_BAR
+        mode: PERSISTENT
+        slot: queue-status
+        interval-ticks: 20
+        priority: 500
+        message: "<gold>⌚ En cola para %queue_name%.</gold> <gray>(</gray><white>%queue_wait%</white><gray> - Usa </gray><white>/leave</white><gray> para salir)</gray>"
+
+  queue-leave-success:
+    deliveries:
+      - channel: CHAT
+        lines:
+          - "<yellow>Saliste de la cola.</yellow>"
+
+  queue-leave-not-active:
+    deliveries:
+      - channel: CHAT
+        lines:
+          - "<yellow>No estabas en una cola activa.</yellow>"
+
+  queue-join-already-current:
+    deliveries:
+      - channel: CHAT
+        lines:
+          - "<yellow>Ya estás en esta cola:</yellow> <white>%queue_name%</white>"
+
+  queue-join-already-other:
+    deliveries:
+      - channel: CHAT
+        lines:
+          - "<yellow>Ya estás en otra cola:</yellow> <white>%active_queue_name%</white>"
+          - "<gray>Salí de esa cola para cambiarte a</gray> <white>%queue_name%</white><gray>.</gray>"
+
+  queue-join-disabled:
+    deliveries:
+      - channel: CHAT
+        lines:
+          - "<red>Esta cola está deshabilitada:</red> <white>%queue_name%</white>"
+
+  queue-join-missing:
+    deliveries:
+      - channel: CHAT
+        lines:
+          - "<red>La cola configurada no existe o no fue cargada.</red>"
+          - "<gray>ID:</gray> <white>%queue_id%</white>"
+
+  queue-join-failed:
+    deliveries:
+      - channel: CHAT
+        lines:
+          - "<red>No pude meterte en la cola:</red> <white>%queue_name%</white>"
+          - "<gray>Estado actual:</gray> <white>%status%</white>"

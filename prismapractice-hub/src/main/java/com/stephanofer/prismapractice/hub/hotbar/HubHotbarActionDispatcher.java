@@ -3,10 +3,12 @@ package com.stephanofer.prismapractice.hub.hotbar;
 import com.stephanofer.prismapractice.api.common.PlayerId;
 import com.stephanofer.prismapractice.core.application.queue.QueueLeaveResult;
 import com.stephanofer.prismapractice.core.application.queue.QueueService;
+import com.stephanofer.prismapractice.hub.HubQueueExitCause;
+import com.stephanofer.prismapractice.hub.HubQueueFeedbackCoordinator;
+import com.stephanofer.prismapractice.hub.HubQueueExitService;
 import com.stephanofer.prismapractice.hub.HubScoreboardModule;
+import com.stephanofer.prismapractice.paper.feedback.PaperFeedbackService;
 import com.stephanofer.prismapractice.paper.scoreboard.ScoreboardUiFocus;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -15,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 final class HubHotbarActionDispatcher {
 
@@ -23,14 +26,20 @@ final class HubHotbarActionDispatcher {
     private final HubHotbarMenuController menuController;
     private final HubHotbarService hotbarService;
     private final HubScoreboardModule scoreboardModule;
+    private final PaperFeedbackService feedbackService;
+    private final HubQueueFeedbackCoordinator queueFeedbackCoordinator;
+    private final Supplier<HubQueueExitService> queueExitServiceSupplier;
     private final Map<String, HubHotbarCustomActionHandler> customHandlers;
 
-    HubHotbarActionDispatcher(JavaPlugin plugin, QueueService queueService, HubHotbarMenuController menuController, HubHotbarService hotbarService, HubScoreboardModule scoreboardModule) {
+    HubHotbarActionDispatcher(JavaPlugin plugin, QueueService queueService, HubHotbarMenuController menuController, HubHotbarService hotbarService, HubScoreboardModule scoreboardModule, PaperFeedbackService feedbackService, HubQueueFeedbackCoordinator queueFeedbackCoordinator, Supplier<HubQueueExitService> queueExitServiceSupplier) {
         this.plugin = Objects.requireNonNull(plugin, "plugin");
         this.queueService = Objects.requireNonNull(queueService, "queueService");
         this.menuController = Objects.requireNonNull(menuController, "menuController");
         this.hotbarService = Objects.requireNonNull(hotbarService, "hotbarService");
         this.scoreboardModule = Objects.requireNonNull(scoreboardModule, "scoreboardModule");
+        this.feedbackService = Objects.requireNonNull(feedbackService, "feedbackService");
+        this.queueFeedbackCoordinator = Objects.requireNonNull(queueFeedbackCoordinator, "queueFeedbackCoordinator");
+        this.queueExitServiceSupplier = Objects.requireNonNull(queueExitServiceSupplier, "queueExitServiceSupplier");
         this.customHandlers = new ConcurrentHashMap<>();
     }
 
@@ -72,15 +81,28 @@ final class HubHotbarActionDispatcher {
     }
 
     private boolean leaveQueue(Player player) {
+        HubQueueExitService queueExitService = queueExitServiceSupplier.get();
+        if (queueExitService != null) {
+            QueueLeaveResult result = queueExitService.leave(player, HubQueueExitCause.HOTBAR_ITEM);
+            return result.success() || result.repairedState();
+        }
         QueueLeaveResult result = queueService.leaveQueue(new PlayerId(player.getUniqueId()));
+        queueFeedbackCoordinator.clear(player);
         scoreboardModule.clearUiFocus(new PlayerId(player.getUniqueId()));
         scoreboardModule.scoreboardService().refresh(player, true);
         hotbarService.refresh(player, true);
         if (result.success()) {
-            player.sendMessage(Component.text("Saliste de la cola.", NamedTextColor.GREEN));
+            feedbackService.send(player, "queue-leave-success", Map.of(
+                    "player", player.getName(),
+                    "queue_name", result.removedEntry().queueId().toString(),
+                    "queue_id", result.removedEntry().queueId().toString(),
+                    "queue_players", "0",
+                    "active_queue_name", "ninguna",
+                    "status", "Disponible"
+            ));
             return true;
         }
-        player.sendMessage(Component.text("No estabas en una cola activa.", NamedTextColor.YELLOW));
+        feedbackService.send(player, "queue-leave-not-active", Map.of("player", player.getName()));
         return result.repairedState();
     }
 

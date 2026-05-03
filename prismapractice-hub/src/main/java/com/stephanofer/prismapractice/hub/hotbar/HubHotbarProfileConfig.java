@@ -5,10 +5,11 @@ import java.util.Objects;
 
 record HubHotbarProfileConfig(
         String key,
+        boolean enabled,
         int selectedSlot,
         boolean resetInventory,
         HubHotbarConstraints constraints,
-        Map<Integer, HubHotbarItemConfig> items
+        Map<String, HubHotbarItemConfig> items
 ) {
 
     HubHotbarProfileConfig {

@@ -90,10 +90,13 @@ public final class PaperFeedbackService {
         if (state == null) {
             return;
         }
-        state.actionBarRegistry.clear(slot);
+        boolean clearedActionBar = state.actionBarRegistry.clear(slot);
         BossBar bossBar = state.persistentBossBars.remove(slot);
         if (bossBar != null) {
             player.hideBossBar(bossBar);
+        }
+        if (clearedActionBar && state.actionBarRegistry.isEmpty()) {
+            player.sendActionBar(Component.empty());
         }
         if (state.isEmpty()) {
             playerStates.remove(player.getUniqueId());
@@ -113,6 +116,24 @@ public final class PaperFeedbackService {
         }
         for (BossBarSnapshot snapshot : state.transientBossBars) {
             player.hideBossBar(snapshot.bar);
+        }
+    }
+
+    public void clearPersistentSlots(Player player, String templateKey) {
+        Objects.requireNonNull(player, "player");
+        Objects.requireNonNull(templateKey, "templateKey");
+        FeedbackTemplate template = config.template(templateKey);
+        for (FeedbackDelivery delivery : template.deliveries()) {
+            if (delivery instanceof ActionBarFeedbackDelivery actionBar
+                    && actionBar.mode() == FeedbackDeliveryMode.PERSISTENT
+                    && actionBar.persistence() != null) {
+                clearSlot(player, actionBar.persistence().slot());
+            }
+            if (delivery instanceof BossBarFeedbackDelivery bossBar
+                    && bossBar.mode() == FeedbackDeliveryMode.PERSISTENT
+                    && bossBar.persistence() != null) {
+                clearSlot(player, bossBar.persistence().slot());
+            }
         }
     }
 

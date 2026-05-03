@@ -1,10 +1,14 @@
 package com.stephanofer.prismapractice.hub.hotbar;
 
 import com.stephanofer.prismapractice.api.common.PlayerId;
+import com.stephanofer.prismapractice.api.queue.QueueEntry;
+import com.stephanofer.prismapractice.api.queue.QueueEntryRepository;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -17,6 +21,7 @@ public final class HubHotbarService {
     private final HubPlayerHotbarContextService contextService;
     private final HubHotbarProfileResolver profileResolver;
     private final HubHotbarItemRegistry registry;
+    private final QueueEntryRepository queueEntryRepository;
     private final HubStaffModeService staffModeService;
     private final Map<UUID, AppliedHotbarProfile> appliedProfiles;
 
@@ -24,11 +29,13 @@ public final class HubHotbarService {
             HubPlayerHotbarContextService contextService,
             HubHotbarProfileResolver profileResolver,
             HubHotbarItemRegistry registry,
+            QueueEntryRepository queueEntryRepository,
             HubStaffModeService staffModeService
     ) {
         this.contextService = Objects.requireNonNull(contextService, "contextService");
         this.profileResolver = Objects.requireNonNull(profileResolver, "profileResolver");
         this.registry = Objects.requireNonNull(registry, "registry");
+        this.queueEntryRepository = Objects.requireNonNull(queueEntryRepository, "queueEntryRepository");
         this.staffModeService = Objects.requireNonNull(staffModeService, "staffModeService");
         this.appliedProfiles = new ConcurrentHashMap<>();
     }
@@ -116,9 +123,42 @@ public final class HubHotbarService {
             }
         }
 
+        PlayerId playerId = new PlayerId(player.getUniqueId());
         for (Map.Entry<Integer, HubCompiledItem> entry : profile.items().entrySet()) {
-            inventory.setItem(entry.getKey(), entry.getValue().cloneStack());
+            inventory.setItem(entry.getKey(), renderItem(playerId, entry.getValue()));
         }
         inventory.setHeldItemSlot(profile.selectedSlot());
+    }
+
+    private ItemStack renderItem(PlayerId playerId, HubCompiledItem item) {
+        if (item.action().type() != HubHotbarActionType.CUSTOM || !"queue-context-source".equalsIgnoreCase(item.action().customKey())) {
+            return item.cloneStack();
+        }
+
+        Optional<QueueEntry> activeEntry = queueEntryRepository.findByPlayerId(playerId);
+        if (activeEntry.isEmpty()) {
+            return item.cloneStack();
+        }
+
+        String sourceItemKey = actionArguments(item.action()).get(activeEntry.get().queueType().name().toLowerCase(java.util.Locale.ROOT));
+        if (sourceItemKey == null || sourceItemKey.isBlank()) {
+            return item.cloneStack();
+        }
+
+        return registry.findItemByKey(sourceItemKey)
+                .map(HubCompiledItem::cloneStack)
+                .orElseGet(item::cloneStack);
+    }
+
+    private Map<String, String> actionArguments(HubHotbarActionConfig action) {
+        Map<String, String> values = new LinkedHashMap<>();
+        for (String argument : action.arguments()) {
+            int separator = argument.indexOf('=');
+            if (separator <= 0 || separator >= argument.length() - 1) {
+                continue;
+            }
+            values.put(argument.substring(0, separator).trim().toLowerCase(java.util.Locale.ROOT), argument.substring(separator + 1).trim());
+        }
+        return values;
     }
 }

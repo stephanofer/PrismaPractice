@@ -11,3 +11,6 @@ permissions:
   prismapractice.admin.reload:
     description: Allows operational runtime reloads
     default: op
+  prismapractice.admin.setlobby:
+    description: Allows setting the hub lobby location
+    default: op

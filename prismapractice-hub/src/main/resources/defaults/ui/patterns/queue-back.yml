@@ -1,0 +1,13 @@
+name: "prismapractice-queue-back"
+size: 27
+
+items:
+  back:
+    type: BACK
+    is-permanent: true
+    slot: 18
+    item:
+      material: ARROW
+      name: "<red><bold>Volver</bold></red>"
+      lore:
+        - "<gray>Regresá al menú anterior."

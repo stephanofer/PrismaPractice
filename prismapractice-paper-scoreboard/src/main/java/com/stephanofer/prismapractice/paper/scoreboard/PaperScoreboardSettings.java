@@ -1,6 +1,7 @@
 package com.stephanofer.prismapractice.paper.scoreboard;
 
 public record PaperScoreboardSettings(
+        boolean enabled,
         int tickInterval,
         int defaultRefreshTicks,
         boolean hideWhenDisabledInSettings,

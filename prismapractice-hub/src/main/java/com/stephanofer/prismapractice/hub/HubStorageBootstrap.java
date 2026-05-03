@@ -28,6 +28,7 @@ final class HubStorageBootstrap {
                 "hub",
                 List.of(
                         DebugConfigDescriptorFactory.descriptor(),
+                        HubLobbyConfigDescriptorFactory.descriptor(),
                         FeedbackConfigDescriptorFactory.descriptor("hub-feedback", "feedback.yml", "defaults/feedback.yml"),
                         HubHotbarConfigDescriptorFactory.descriptor(),
                         PaperScoreboardConfigDescriptorFactory.descriptor("hub-scoreboards", "scoreboards.yml", "defaults/scoreboards.yml")

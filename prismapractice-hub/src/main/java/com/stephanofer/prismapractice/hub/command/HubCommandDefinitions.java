@@ -10,11 +10,16 @@ import com.stephanofer.prismapractice.command.CommandSuggestions;
 import com.stephanofer.prismapractice.command.DebugCommandDefinitions;
 import com.stephanofer.prismapractice.command.ReloadCoordinator;
 import com.stephanofer.prismapractice.command.ReloadReport;
+import com.stephanofer.prismapractice.api.common.PlayerId;
 import com.stephanofer.prismapractice.core.application.state.PlayerStateService;
+import com.stephanofer.prismapractice.hub.HubLobbyService;
+import com.stephanofer.prismapractice.hub.HubQueueExitCause;
+import com.stephanofer.prismapractice.hub.HubQueueExitService;
+import com.stephanofer.prismapractice.hub.HubScoreboardModule;
+import com.stephanofer.prismapractice.paper.feedback.PaperFeedbackService;
 import com.stephanofer.prismapractice.hub.hotbar.HubHotbarService;
 import com.stephanofer.prismapractice.hub.hotbar.HubStaffModeService;
 import com.stephanofer.prismapractice.hub.ui.HubUiModule;
-import com.stephanofer.prismapractice.paper.feedback.PaperFeedbackService;
 import com.stephanofer.prismapractice.paper.ui.dialog.PaperDialogService;
 import com.stephanofer.prismapractice.paper.ui.menu.ZMenuUiService;
 import org.bukkit.entity.Player;
@@ -31,6 +36,7 @@ public final class HubCommandDefinitions {
     private static final String ROOT_LITERAL = "prismapractice";
     private static final List<String> ROOT_ALIASES = List.of("practice", "pp");
     private static final String RELOAD_PERMISSION = "prismapractice.admin.reload";
+    private static final String SET_LOBBY_PERMISSION = "prismapractice.admin.setlobby";
     private static final String STAFF_MODE_PERMISSION = "prismapractice.staffmode";
 
     public static List<CommandSpec> create() {
@@ -46,7 +52,7 @@ public final class HubCommandDefinitions {
         practice.child(CommandLiteralSpec.literal("help")
             .usage("/prismapractice help")
             .executes(context -> {
-                context.replyRich("<yellow>Comandos:</yellow> <gray>/prismapractice help, /prismapractice info, /prismapractice reload [scope]</gray>");
+                context.replyRich("<yellow>Comandos:</yellow> <gray>/prismapractice help, /prismapractice info, /prismapractice spawn, /prismapractice setlobby, /prismapractice reload [scope]</gray>");
                 return Command.SINGLE_SUCCESS;
             }));
 
@@ -58,7 +64,7 @@ public final class HubCommandDefinitions {
                 if (context.playerSender() != null) {
                     PlayerStateService playerStateService = context.findService(PlayerStateService.class);
                     if (playerStateService != null) {
-                        playerStateService.findCurrentState(new com.stephanofer.prismapractice.api.common.PlayerId(context.playerSender().getUniqueId()))
+                        playerStateService.findCurrentState(new PlayerId(context.playerSender().getUniqueId()))
                             .ifPresent(state -> message.append(" <dark_gray>|</dark_gray> <aqua>State:</aqua> <gray>")
                                 .append(state.status().name())
                                 .append("/" )
@@ -71,13 +77,56 @@ public final class HubCommandDefinitions {
             }));
 
         practice.child(reloadCommand());
+        practice.child(spawnCommand());
+        practice.child(setLobbyCommand());
         practice.child(staffModeCommand());
         DebugCommandDefinitions.appendToRoot(practice, "hub");
 
         practice.child(feedbackCommand());
         practice.child(uiCommand());
 
-        return List.of(practice);
+        return List.of(practice, leaveRoot());
+    }
+
+    private static CommandLiteralSpec spawnCommand() {
+        return CommandLiteralSpec.literal("spawn")
+                .senderScope(CommandSenderScope.PLAYER_ONLY)
+                .usage("/prismapractice spawn")
+                .executes(context -> {
+                    HubLobbyService lobbyService = context.service(HubLobbyService.class);
+                    Player player = context.playerSender();
+                    if (!lobbyService.isConfigured()) {
+                        context.replyRich("<red>El lobby del hub todavía no está configurado.</red>");
+                        return 0;
+                    }
+                    if (!lobbyService.teleportToLobby(player)) {
+                        context.replyRich("<red>No pude teletransportarte al lobby.</red> <gray>Revisá que el mundo configurado exista.</gray>");
+                        return 0;
+                    }
+                    context.replyRich("<green>Te envié al lobby del hub.</green>");
+                    return Command.SINGLE_SUCCESS;
+                });
+    }
+
+    private static CommandLiteralSpec setLobbyCommand() {
+        return CommandLiteralSpec.literal("setlobby")
+                .senderScope(CommandSenderScope.PLAYER_ONLY)
+                .permission(SET_LOBBY_PERMISSION)
+                .usage("/prismapractice setlobby")
+                .executes(context -> {
+                    context.service(HubLobbyService.class).save(context.playerSender());
+                    context.replyRich("<green>Lobby del hub guardado.</green>");
+                    return Command.SINGLE_SUCCESS;
+                });
+    }
+
+    private static CommandSpec leaveRoot() {
+        CommandSpec leave = CommandSpec.root("leave");
+        leave.description("Leave active queue");
+        leave.usage("/leave");
+        leave.senderScope(CommandSenderScope.PLAYER_ONLY);
+        leave.executes(HubCommandDefinitions::leaveQueue);
+        return leave;
     }
 
     private static CommandLiteralSpec uiCommand() {
@@ -85,13 +134,13 @@ public final class HubCommandDefinitions {
                 .senderScope(CommandSenderScope.PLAYER_ONLY)
                 .usage("/prismapractice ui <menu|dialog|reload|reset>")
                 .executes(context -> {
-                    context.replyRich("<yellow>Usá:</yellow> <gray>/prismapractice ui menu <demo-main|demo-dynamic>, /prismapractice ui dialog <id>, /prismapractice ui reload, /prismapractice ui reset</gray>");
+                    context.replyRich("<yellow>Usá:</yellow> <gray>/prismapractice ui menu <ranked|unranked|demo-main|demo-dynamic>, /prismapractice ui dialog <id>, /prismapractice ui reload, /prismapractice ui reset</gray>");
                     return Command.SINGLE_SUCCESS;
                 });
 
         ui.children(
                 CommandLiteralSpec.literal("menu")
-                        .usage("/prismapractice ui menu <demo-main|demo-dynamic>")
+                        .usage("/prismapractice ui menu <ranked|unranked|demo-main|demo-dynamic>")
                         .child(CommandArgumentSpec.argument("menu", StringArgumentType.word())
                                 .executes(context -> {
                                     String menu = context.argument("menu", String.class);
@@ -248,6 +297,15 @@ public final class HubCommandDefinitions {
             context.replyRich("<red>Scope inválido:</red> <gray>" + exception.getMessage() + "</gray>");
             return 0;
         }
+    }
+
+    private static int leaveQueue(com.stephanofer.prismapractice.command.PaperCommandContext context) {
+        Player player = context.playerSender();
+        var result = context.service(HubQueueExitService.class).leave(player, HubQueueExitCause.COMMAND);
+        if (result.success()) {
+            return Command.SINGLE_SUCCESS;
+        }
+        return result.repairedState() ? Command.SINGLE_SUCCESS : 0;
     }
 
     private static int sendTemplate(Player player, PaperFeedbackService feedbackService, String templateKey, String value) {

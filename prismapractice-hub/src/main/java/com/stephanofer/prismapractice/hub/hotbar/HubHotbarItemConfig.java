@@ -9,6 +9,7 @@ import java.util.Set;
 
 record HubHotbarItemConfig(
         String key,
+        boolean enabled,
         int slot,
         Material material,
         int amount,

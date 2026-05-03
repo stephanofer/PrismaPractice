@@ -64,6 +64,10 @@ public final class PaperScoreboardService {
             clear(player);
             return;
         }
+        if (!config.settings().enabled()) {
+            clear(player);
+            return;
+        }
 
         try {
             ScoreboardContextSnapshot snapshot = debug.measure(
@@ -114,7 +118,7 @@ public final class PaperScoreboardService {
         this.tickCounter = 0L;
         this.tickerTask.cancel();
         this.tickerTask = startTicker(config.settings().tickInterval());
-        debug.info(DebugCategories.SCOREBOARD, DebugDetailLevel.BASIC, "scoreboard.reload.completed", "Scoreboard configuration reloaded", debug.context().field("tickInterval", config.settings().tickInterval()).build());
+        debug.info(DebugCategories.SCOREBOARD, DebugDetailLevel.BASIC, "scoreboard.reload.completed", "Scoreboard configuration reloaded", debug.context().field("enabled", config.settings().enabled()).field("tickInterval", config.settings().tickInterval()).build());
         for (Player player : Bukkit.getOnlinePlayers()) {
             refresh(player, true);
         }

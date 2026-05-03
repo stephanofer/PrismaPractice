@@ -1,0 +1,60 @@
+name: "<gradient:#5ac8fa:#3b82f6><bold>Unranked</bold></gradient> <gray>Queues</gray>"
+size: 27
+patterns:
+  - "prismapractice-queue-frame"
+  - "prismapractice-queue-back"
+
+items:
+  sword:
+    pattern:
+      file-name: "queue-entry"
+      plugin-name: "PrismaPracticeHub"
+      entry_slot: 10
+      entry_queue_id: "unranked-sword-1v1"
+      entry_material: DIAMOND_SWORD
+      entry_name: "<aqua><bold>Sword</bold></aqua>"
+
+  axe:
+    pattern:
+      file-name: "queue-entry"
+      plugin-name: "PrismaPracticeHub"
+      entry_slot: 11
+      entry_queue_id: "unranked-axe-1v1"
+      entry_material: NETHERITE_AXE
+      entry_name: "<gold><bold>Axe</bold></gold>"
+
+  builduhc:
+    pattern:
+      file-name: "queue-entry"
+      plugin-name: "PrismaPracticeHub"
+      entry_slot: 12
+      entry_queue_id: "unranked-builduhc-1v1"
+      entry_material: LAVA_BUCKET
+      entry_name: "<yellow><bold>BuildUHC</bold></yellow>"
+
+  crystalpvp:
+    pattern:
+      file-name: "queue-entry"
+      plugin-name: "PrismaPracticeHub"
+      entry_slot: 14
+      entry_queue_id: "unranked-crystalpvp-1v1"
+      entry_material: END_CRYSTAL
+      entry_name: "<light_purple><bold>CrystalPvP</bold></light_purple>"
+
+  pot:
+    pattern:
+      file-name: "queue-entry"
+      plugin-name: "PrismaPracticeHub"
+      entry_slot: 15
+      entry_queue_id: "unranked-pot-1v1"
+      entry_material: SPLASH_POTION
+      entry_name: "<aqua><bold>Pot</bold></aqua>"
+
+  smp:
+    pattern:
+      file-name: "queue-entry"
+      plugin-name: "PrismaPracticeHub"
+      entry_slot: 16
+      entry_queue_id: "unranked-smp-1v1"
+      entry_material: SHIELD
+      entry_name: "<green><bold>SMP</bold></green>"
